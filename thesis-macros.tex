@@ -1,0 +1,55 @@
+% Compatibility definitions used by the thesis chapters migrated from the
+% previous document class. Presentation is left to USCthesis.
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\renewcommand{\binom}[2]{\left(\genfrac{}{}{0pt}{}{#1}{#2}\right)}
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\DeclareMathOperator{\lcm}{lcm}
+\newcommand{\ZZ}{\mathbb{Z}}
+
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Variance}{\mathbb{VAR}}
+\newcommand{\Real}{\mathbb{R}}
+\newcommand{\expect}[1]{\mathbb{E}\left[#1\right]}
+\newcommand{\proj}{\operatorname{proj}}
+\newcommand{\Reg}{\mathrm{Reg}}
+\newcommand{\inner}[2]{\left\langle #1,#2 \right\rangle}
+\newcommand{\ind}[1]{\mathbf{1}_{\{#1\}}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+
+\newcommand{\Section}{Section}
+\newcommand{\sref}[1]{\ref{#1}}
+\newcommand{\Figure}{Figure}
+\newcommand{\Figures}{Figures}
+\newcommand{\fref}[1]{\ref{#1}}
+\newcommand{\CaptionFontSize}{\small}
+\newcommand{\BlankFootnote}[1]{%
+  \begingroup
+  \renewcommand{\thefootnote}{}%
+  \footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+% Give long mathematical prose a little extra flexibility at USC margins.
+\setlength{\emergencystretch}{3em}
+
+\theoremstyle{plain}
+\newtheorem{Thm:Theorem}{Theorem}[chapter]
+\newtheorem{Thm:Lemma}[Thm:Theorem]{Lemma}
+\newtheorem{Thm:Assumption}[Thm:Theorem]{Assumption}
+\newtheorem{Thm:Corollary}[Thm:Theorem]{Corollary}
+\newtheorem{Thm:Remark}[Thm:Theorem]{Remark}
+\newtheorem{Thm:Claim}[Thm:Theorem]{Claim}
+\newtheorem{Thm:Proposition}[Thm:Theorem]{Proposition}
+\newtheorem{Thm:Conjecture}[Thm:Theorem]{Conjecture}
+
+\theoremstyle{definition}
+\newtheorem{Thm:Problem}[Thm:Theorem]{Problem}
+\newtheorem{Thm:Definition}[Thm:Theorem]{Definition}
+\newtheorem{Thm:Example}[Thm:Theorem]{Example}

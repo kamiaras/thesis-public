@@ -1,0 +1,561 @@
+\chapter{Mathematical Preliminaries}
+\label{Section:Preliminaries}
+
+This chapter collects the tools used across the optimization and control
+analyses. It was generated primarily using AI and presents standard material
+for which we make no claim of novelty.
+
+\section{Notation and online comparisons}\label{sec:prelim:notation}
+
+We follow the notation of Section~\ref{sec:intro:notation}.
+In this chapter, $Q\subseteq\Real^n$ is a convex feasible set and $T$ is
+the horizon.
+
+In online convex optimization, $z_t\in Q$ is selected before the convex
+loss $\ell_t$ is revealed. Static regret on a fixed convex set $Q$
+\cite{zinkevich2003online,hazan2016introduction} is
+\begin{equation}\label{eq:intro:static-regret}
+ \Reg_T(Q)\coloneqq\sum_{t=1}^T\ell_t(z_t)-\inf_{z\in Q}\sum_{t=1}^T\ell_t(z).
+\end{equation}
+On a nonempty, closed, bounded convex domain with uniformly bounded
+subgradients, projected subgradient descent with suitable step sizes gives
+$O(\sqrt T)$ regret.
+
+In the storage-control chapter, $z$ specifies a fixed policy. To define
+$\ell_t(z)$, we apply that policy from the first round using the same
+arrivals and cost functions as the online controller; $\ell_t(z)$ is the
+resulting cost in round $t$. The online controller changes its policy
+over time, so its current state also reflects earlier policies. Its
+actual cost can therefore differ from $\ell_t(z_t)$. 
+
+
+For a norm $\norm{\cdot}$, its dual is
+\begin{equation}\label{eq:intro:dual-norm}
+ \norm{g}_*\coloneqq\sup_{\norm{x}\le1}\inner{g}{x}.
+\end{equation}
+In particular, $\ell_1$ and $\ell_\infty$ are dual, and $\ell_2$ is self-dual.
+
+\begin{Thm:Lemma}[H\"older and Young inequalities {\cite[Example~5.11]{orabona_modern_2023}}]\label{lem:holder}
+For any dual pair of norms and any $\gamma>0$,
+\begin{equation}\label{eq:intro:holder-young}
+ |\inner{g}{v}|\le\norm{g}_*\norm{v},\qquad
+ \inner{g}{v}-\frac\gamma2\norm{v}^2
+ \le\frac{\norm{g}_*^2}{2\gamma}.
+\end{equation}
+For the norm induced by the inner product, the first inequality is Cauchy--Schwarz.
+For $a,b\ge0$ and conjugate exponents $p,q>1$, meaning $1/p+1/q=1$,
+Young's inequality also gives
+\begin{equation}\label{eq:intro:young-conjugate}
+ ab\le\frac{a^p}{p}+\frac{b^q}{q}.
+\end{equation}
+\end{Thm:Lemma}
+\begin{proof}
+For $v\ne0$, apply~\eqref{eq:intro:dual-norm} to both
+$v/\norm{v}$ and $-v/\norm{v}$; the case $v=0$ is immediate.
+With $r\coloneqq\norm{v}$, this gives
+\begin{align*}
+ \inner{g}{v}-\frac\gamma2\norm{v}^2
+ &\le \norm{g}_*r-\frac\gamma2r^2\\
+ &=-\frac\gamma2\left(r-\frac{\norm{g}_*}{\gamma}\right)^2
+   +\frac{\norm{g}_*^2}{2\gamma}
+ \le \frac{\norm{g}_*^2}{2\gamma}.
+\end{align*}
+Here we complete the square, then use $\gamma>0$ to discard its
+nonpositive contribution.
+For~\eqref{eq:intro:young-conjugate}, the case $b=0$ is immediate.
+If $b>0$, the derivative of $br-r^p/p$ is $b-r^{p-1}$, so its
+maximum over $r\ge0$ occurs at $r=b^{1/(p-1)}$. Since $q=p/(p-1)$,
+\[
+ ab-\frac{a^p}{p}
+ \le\max_{r\ge0}\left\{br-\frac{r^p}{p}\right\}
+ =b^q-\frac{b^q}{p}=\frac{b^q}{q}.
+\]
+\end{proof}
+
+\section{Convexity, subgradients, and affine parameterizations}
+\label{sec:intro:convexity}
+
+A set $Q$ is convex if it contains every segment between its points.
+A function $f:Q\to\Real$ is convex if
+\begin{equation}\label{eq:intro:convexity}
+ f(\theta x+(1-\theta)y)\le\theta f(x)+(1-\theta)f(y),
+ \qquad x,y\in Q,\quad 0\le\theta\le1.
+\end{equation}
+A subgradient $g\in\partial f(x)$ satisfies
+\begin{equation}\label{eq:intro:subgradient}
+ f(y)\ge f(x)+\inner{g}{y-x},\qquad y\in Q.
+\end{equation}
+At a differentiable
+point we use $\nabla f(x)$.
+
+\begin{Thm:Lemma}[Convex comparison and affine composition {\cite{boyd_vandenberghe_2004,orabona_modern_2023}}]
+\label{lem:intro:convex-comparison}
+Let $f$ be convex on $Q$.
+For $x_i\in Q$, $\theta_i\ge0$, and $\sum_i\theta_i=1$,
+\begin{equation}\label{eq:intro:jensen}
+ f\Bigl(\sum_i\theta_i x_i\Bigr)\le\sum_i\theta_i f(x_i).
+\end{equation}
+For affine composition, let $P\subseteq\Real^p$ and $Q\subseteq\Real^q$
+be convex, with $A\in\Real^{q\times p}$ and $b\in\Real^q$.
+If $F(z)\coloneqq Az+b$ maps $P$ into $Q$, then $\ell(z)\coloneqq f(F(z))$ is convex and
+\begin{equation}\label{eq:intro:affine-subgradient}
+ g\in\partial f(F(z))\quad\Longrightarrow\quad
+ A^\top g\in\partial\ell(z).
+\end{equation}
+\end{Thm:Lemma}
+\begin{proof}
+For~\eqref{eq:intro:jensen}, discard zero weights and induct on the number
+of remaining weights. If there is more than one, choose a weight
+$0<\theta_j<1$, normalize the others by $1-\theta_j$, and apply the
+induction hypothesis to their convex combination, followed by
+\eqref{eq:intro:convexity} with weights $\theta_j$ and $1-\theta_j$.
+For $z,z'\in P$ and $0\le\lambda\le1$,
+\[
+ \ell(\lambda z+(1-\lambda)z')
+ =f\bigl(\lambda F(z)+(1-\lambda)F(z')\bigr)
+ \overset{\mathrm{(A)}}{\le}\lambda\ell(z)+(1-\lambda)\ell(z'),
+\]
+where (A) is~\eqref{eq:intro:convexity} with
+$(x,y,\theta)=(F(z),F(z'),\lambda)$; both images lie in $Q$.
+For every $z'\in P$,
+\[
+ \ell(z')-\ell(z)
+ =f(F(z'))-f(F(z))
+ \overset{\mathrm{(A)}}{\ge}\inner{g}{F(z')-F(z)}
+ =\inner{A^\top g}{z'-z}.
+\]
+Here (A) is~\eqref{eq:intro:subgradient} at $F(z)$ with comparison point
+$F(z')$. The last equality uses $F(z')-F(z)=A(z'-z)$, so
+\eqref{eq:intro:subgradient} for $\ell$ gives~\eqref{eq:intro:affine-subgradient}.
+\end{proof}
+
+\begin{Thm:Lemma}[Jensen's inequality for fractional powers]
+\label{lem:intro:jensen-expectation}
+For a nonnegative random variable $Z$ with $\E[Z]<\infty$ and $0<\theta<1$,
+\begin{equation}\label{eq:intro:jensen-power}
+ \E[Z^\theta]\le(\E[Z])^\theta.
+\end{equation}
+\end{Thm:Lemma}
+\begin{proof}
+The bound $0\le Z^\theta\le1+Z$ ensures integrability. Put $\mu\coloneqq\E[Z]$.
+If $\mu=0$, then $Z=0$ almost surely and the conclusion is immediate.
+If $\mu>0$, concavity of $z\mapsto z^\theta$ on $[0,\infty)$ gives
+\[
+ z^\theta\le\mu^\theta+\theta\mu^{\theta-1}(z-\mu),\qquad z\ge0.
+\]
+Taking expectations with $z=Z$ proves~\eqref{eq:intro:jensen-power}.
+\end{proof}
+
+\begin{Thm:Lemma}[Bounded subgradient selections and Lipschitz continuity; cf.~{\cite[Theorem~2.24]{orabona_modern_2023}}]
+\label{lem:intro:lipschitz}
+Suppose that at every $x\in Q$ a subgradient $g_x\in\partial f(x)$ can be
+selected with $\norm{g_x}_*\le L$. Then
+\begin{equation}\label{eq:intro:lipschitz}
+ |f(x)-f(y)|\le L\norm{x-y},\qquad x,y\in Q.
+\end{equation}
+\end{Thm:Lemma}
+\begin{proof}
+For $x,y\in Q$,
+\[
+ f(x)-f(y)
+ \le\inner{g_x}{x-y}
+ \le\norm{g_x}_*\norm{x-y}
+ \le L\norm{x-y}.
+\]
+The inequalities use~\eqref{eq:intro:subgradient}, H\"older's inequality
+(Lemma~\ref{lem:holder}), and $\norm{g_x}_*\le L$.
+Interchanging $x$ and $y$ proves~\eqref{eq:intro:lipschitz}.
+\end{proof}
+
+Inequality~\eqref{eq:intro:lipschitz} defines $L$-Lipschitz continuity.
+
+In the mirror-descent updates below, strong convexity of the regularizer
+bounds the distance between successive iterates;
+see~\eqref{eq:intro:md-movement}.
+
+\begin{Thm:Definition}[Strong convexity {\cite[Section~4.1.1]{orabona_modern_2023}}]\label{def:strong-convex}
+A function $f:Q\to\Real$ is $\sigma$-strongly convex with respect to
+$\norm{\cdot}$ if, for $x,y\in Q$ and $0\le\theta\le1$,
+\begin{equation}\label{eq:intro:strong-convexity}
+ f(\theta x+(1-\theta)y)
+ \le\theta f(x)+(1-\theta)f(y)
+ -\frac\sigma2\theta(1-\theta)\norm{x-y}^2.
+\end{equation}
+\end{Thm:Definition}
+
+If $f$ is $\sigma$-strongly convex on $Q$, then for $x\in Q$ and
+$g\in\partial f(x)$,
+\begin{equation}\label{eq:intro:strong-support}
+ f(y)\ge f(x)+\inner{g}{y-x}
+ +\frac\sigma2\norm{y-x}^2,
+ \qquad y\in Q.
+\end{equation}
+\begin{proof}
+For $x_\theta\coloneqq(1-\theta)x+\theta y$ and $0<\theta<1$,
+\begin{align*}
+ f(x)+\theta\inner{g}{y-x}
+ &\overset{\mathrm{(A)}}{\le} f(x_\theta)\\
+ &\overset{\mathrm{(B)}}{\le}(1-\theta)f(x)+\theta f(y)
+   -\frac\sigma2\theta(1-\theta)\norm{x-y}^2.
+\end{align*}
+Here (A) uses~\eqref{eq:intro:subgradient} with comparison point
+$x_\theta\in Q$ and $x_\theta-x=\theta(y-x)$; (B) uses
+\eqref{eq:intro:strong-convexity} with weights $1-\theta$ and $\theta$.
+Subtracting $f(x)$, dividing by $\theta>0$, and letting
+$\theta\downarrow0$ proves
+\eqref{eq:intro:strong-support}.
+\end{proof}
+
+\section{Bregman divergence and the three-point inequality}
+\label{sec:intro:bregman}
+
+A Bregman divergence serves as a proximity term in mirror
+descent \cite{shalev2007primal,abernethy2009competing,hazan2010extracting}.
+The three-point inequality below converts the minimization that defines an
+update into a bound relative to any feasible comparison point
+\cite{prox-siam93,SGD-robust,tseng-accelerated,wei2020online}.
+
+Let $C$ be a convex domain and $\Phi:C\to\Real$ a convex function,
+differentiable on $\operatorname{ri}(C)$, the interior relative
+to its affine hull. Derivatives are taken in that affine hull. The
+constraint set $Q\subseteq C$ can have smaller dimension. Define the reference set
+$Q_{\mathrm{ref}}\coloneqq Q\cap \operatorname{ri}(C)$. For $x\in Q$, $y\in Q_{\mathrm{ref}}$, the Bregman
+divergence~\cite{bregman1967relaxation} is
+\begin{equation}\label{eq:intro:bregman}
+ D_\Phi(x,y)\coloneqq\Phi(x)-\Phi(y)-\inner{\nabla\Phi(y)}{x-y}.
+\end{equation}
+The restriction on the second argument ensures that $\nabla\Phi(y)$ is
+defined. The first argument may lie on the boundary, because the formula
+requires only the value $\Phi(x)$ there. For entropy, this allows comparison
+points with zero coordinates while requiring positive coordinates at the
+reference point.
+Applying~\eqref{eq:intro:subgradient} to $\Phi$ at $y$ gives
+$D_\Phi(x,y)\ge0$. If $\Phi$ is $\sigma$-strongly convex on $Q$, then
+\eqref{eq:intro:strong-support} with base point $y$, comparison point $x$,
+and subgradient $\nabla\Phi(y)$ gives
+\begin{equation}\label{eq:intro:bregman-curvature}
+ D_\Phi(x,y)\ge\frac\sigma2\norm{x-y}^2,
+ \qquad x\in Q,\quad y\in Q_{\mathrm{ref}}.
+\end{equation}
+Expanding each divergence using~\eqref{eq:intro:bregman} cancels the
+function values and gives the three-point identity
+\begin{equation}\label{eq:intro:three-point}
+ \inner{\nabla\Phi(x)-\nabla\Phi(y)}{z-x}
+ =D_\Phi(z,y)-D_\Phi(z,x)-D_\Phi(x,y),
+\end{equation}
+for $x,y\in Q_{\mathrm{ref}}$ and $z\in Q$.
+
+\begin{Thm:Lemma}[Bregman three-point inequality; cf.~{\cite[Lemma~2.1]{wei2020online}}]\label{lem:pushback}
+Let $Q\subseteq C$ be convex, let $f:Q\to\Real$ be convex, and fix
+$\alpha>0$ and $y\in Q_{\mathrm{ref}}$. Suppose
+\begin{equation}\label{eq:bregman-min}
+ \hat x\in\argmin_{x\in Q}\{f(x)+\alpha D_\Phi(x,y)\},
+ \qquad \hat x\in Q_{\mathrm{ref}}.
+\end{equation}
+Then, for all $z\in Q$,
+\begin{equation}\label{eq:pushback}
+ f(\hat x)+\alpha D_\Phi(\hat x,y)
+ \le f(z)+\alpha D_\Phi(z,y)-\alpha D_\Phi(z,\hat x).
+\end{equation}
+\end{Thm:Lemma}
+\begin{proof}
+For $x_\theta\coloneqq(1-\theta)\hat x+\theta z$ and $0<\theta<1$,
+convexity of $Q$ gives $x_\theta\in Q$, so
+\begin{align*}
+ f(\hat x)+\alpha D_\Phi(\hat x,y)
+ &\overset{\mathrm{(A)}}{\le} f(x_\theta)+\alpha D_\Phi(x_\theta,y)\\
+ &\overset{\mathrm{(B)}}{\le}(1-\theta)f(\hat x)+\theta f(z)
+   +\alpha D_\Phi(x_\theta,y).
+\end{align*}
+Here (A) is optimality in~\eqref{eq:bregman-min}, and (B) is
+\eqref{eq:intro:convexity} for $f$ with weights $1-\theta$ and $\theta$.
+Subtracting $(1-\theta)f(\hat x)+\alpha D_\Phi(\hat x,y)$ and dividing
+by $\theta>0$ gives
+\[
+ f(\hat x)-f(z)
+ \le\alpha\frac{D_\Phi(x_\theta,y)-D_\Phi(\hat x,y)}{\theta}.
+\]
+By~\eqref{eq:intro:bregman}, the difference quotient on the right tends to
+$\inner{\nabla\Phi(\hat x)-\nabla\Phi(y)}{z-\hat x}$ as
+$\theta\downarrow0$. This directional derivative exists because
+$\hat x\in\operatorname{ri}(C)$. Thus
+\[
+ f(\hat x)-f(z)
+ \le\alpha\inner{\nabla\Phi(\hat x)-\nabla\Phi(y)}{z-\hat x}
+ =\alpha\{D_\Phi(z,y)-D_\Phi(z,\hat x)-D_\Phi(\hat x,y)\}.
+\]
+The equality is~\eqref{eq:intro:three-point} with $x=\hat x$ and the
+same $y,z$; both $\hat x$ and $y$ belong to $Q_{\mathrm{ref}}$.
+\end{proof}
+
+\section{Quadratic and entropy geometries}\label{sec:intro:geometry}
+
+We use quadratic regularizers for Euclidean updates,
+and entropy regularizers for allocation fractions on a simplex.
+
+For the Euclidean norm, set
+\begin{equation}\label{eq:intro:quadratic-geometry}
+ \Phi(x)\coloneqq\tfrac12\norm{x}^2,\qquad
+ D_\Phi(x,y)=\tfrac12\norm{x-y}^2.
+\end{equation}
+The function $\Phi$ is $1$-strongly convex in the Euclidean norm, whose
+dual norm is also Euclidean.
+
+For entropy, define the probability and subprobability simplices
+\begin{equation}\label{eq:intro:simplices}
+ \Delta_d\coloneqq\{p\ge0:\mathbf1^\top p=1\},\qquad
+ S_d\coloneqq\{p\ge0:\mathbf1^\top p\le1\},
+\end{equation}
+and the unnormalized negative entropy
+\begin{equation}\label{eq:intro:negentropy}
+ \Psi(p)\coloneqq\sum_{i=1}^d(p_i\log p_i-p_i),\qquad 0\log0\coloneqq0.
+\end{equation}
+Its Bregman divergence is the generalized Kullback--Leibler (KL) divergence:
+for $p\ge0$ and $q>0$,
+\begin{equation}\label{eq:intro:generalized-kl}
+ D_\Psi(p,q)=\sum_i\left(p_i\log\frac{p_i}{q_i}-p_i+q_i\right).
+\end{equation}
+When $p,q\in\Delta_d$ with $q>0$, the linear terms cancel, giving the
+ordinary KL divergence between probability vectors.
+
+\begin{Thm:Lemma}[Bounds on entropy divergence; cf.~{\cite[Proposition~5.1]{BECK2003167}}]
+\label{lem:intro:entropy}
+For $p\in S_d$ and $q\in S_d\cap(0,\infty)^d$,
+\begin{equation}\label{eq:intro:entropy-curvature}
+ D_\Psi(p,q)\ge\tfrac12\norm{p-q}_1^2.
+\end{equation}
+The uniform initial points satisfy
+\begin{equation}\label{eq:intro:entropy-initial}
+ \sup_{p\in\Delta_d}D_\Psi(p,\mathbf1/d)\le\log d,
+ \qquad
+ \sup_{p\in S_d}D_\Psi(p,\mathbf1/(d+1))\le\log(d+1).
+\end{equation}
+\end{Thm:Lemma}
+\begin{proof}
+For positive $p,q\in S_d$, put $v\coloneqq p-q$ and $q_s\coloneqq q+sv$ for
+$0\le s\le1$. Then $q_s>0$, $q_s\in S_d$, and differentiating
+\eqref{eq:intro:negentropy} gives
+$\nabla^2\Psi(q_s)=\operatorname{diag}(1/q_{s,i})$. Hence
+\begin{equation}\label{eq:intro:entropy-hessian-bound}
+  \norm{v}_1^2
+ \overset{\mathrm{(A)}}{\le}
+ \left(\sum_i\frac{v_i^2}{q_{s,i}}\right)\sum_iq_{s,i}
+ \overset{\mathrm{(B)}}{\le} v^\top\nabla^2\Psi(q_s)v.
+\end{equation}
+Step (A) is Cauchy--Schwarz from Lemma~\ref{lem:holder}, applied to
+the vectors with components $|v_i|/\sqrt{q_{s,i}}$ and
+$\sqrt{q_{s,i}}$; positivity makes the denominators valid.
+Step (B) uses $\sum_iq_{s,i}\le1$ from~\eqref{eq:intro:simplices}.
+Taylor's formula with integral remainder yields
+\[
+ D_\Psi(p,q)
+ =\int_0^1(1-s)v^\top\nabla^2\Psi(q_s)v\,\mathrm{d}s
+ \overset{\mathrm{(A)}}{\ge}\norm{v}_1^2\int_0^1(1-s)\,\mathrm{d}s
+ =\frac12\norm{p-q}_1^2.
+\]
+Here (A) integrates~\eqref{eq:intro:entropy-hessian-bound} against the
+nonnegative weight $1-s$; its integral is $1/2$.
+If $p$ has zero coordinates, apply this bound to
+$p_\epsilon\coloneqq(1-\epsilon)p+\epsilon q>0$, where $0<\epsilon<1$.
+Convexity gives $p_\epsilon\in S_d$, and the convention
+$0\log0=0$ in~\eqref{eq:intro:negentropy} makes both sides continuous
+as $\epsilon\downarrow0$.
+For the initial bounds, $D_\Psi(\cdot,q)$ is convex for fixed $q>0$.
+Writing $e_i$ for the coordinate vectors, every point of $\Delta_d$ is a
+convex combination of the $e_i$, and every point of $S_d$ is a convex
+combination of $0,e_1,\ldots,e_d$. Thus~\eqref{eq:intro:jensen} reduces
+the bounds to the vertex values from~\eqref{eq:intro:generalized-kl}:
+\[
+\begin{aligned}
+ D_\Psi(e_i,\mathbf1/d)&=\log d,\\
+ D_\Psi(0,\mathbf1/(d+1))&=\frac d{d+1},\\
+ D_\Psi(e_i,\mathbf1/(d+1))&=\log(d+1)-\frac1{d+1}.
+\end{aligned}
+\]
+Since $d/(d+1)\le\int_1^{d+1}t^{-1}\,\mathrm{d}t=\log(d+1)$,
+these values prove~\eqref{eq:intro:entropy-initial}, including $d=1$.
+\end{proof}
+
+For the uniform initial points in~\eqref{eq:intro:entropy-initial},
+the initial-divergence term in the mirror-descent bound
+\eqref{eq:intro:md-regret} is at most $\log d/\eta$ on $\Delta_d$ and
+$\log(d+1)/\eta$ on $S_d$, where $\eta>0$ is the step size.
+The dual subgradient norm is $\ell_\infty$.
+
+\begin{Thm:Lemma}[Entropy mirror-descent updates; cf.~{\cite[Section~5]{BECK2003167}}]\label{lem:intro:entropy-update}
+\label{ch4:lem:omd-closed-form}
+Let $q$ be positive in $Q=\Delta_d$ or $Q=S_d$, let $\eta>0$, and
+set $a_i\coloneqq q_i e^{-\eta g_i}$. The unique minimizer of
+$\eta\inner{g}{p}+D_\Psi(p,q)$ over $p\in Q$ is
+\begin{equation}\label{eq:intro:entropy-update}
+ p^+\coloneqq
+ \begin{cases}
+ a/(\sum_i a_i),&Q=\Delta_d,\\
+ a/\max\{1,\sum_i a_i\},&Q=S_d.
+ \end{cases}
+\end{equation}
+Both updates preserve positivity.
+\end{Thm:Lemma}
+\begin{proof}
+Let $A\coloneqq\sum_i a_i>0$ and let $p^+$ be the candidate in
+\eqref{eq:intro:entropy-update}. Write $p^+=a/Z$, where $Z\coloneqq A$ on
+$\Delta_d$ and $Z\coloneqq\max\{1,A\}$ on $S_d$, and put $\lambda\coloneqq\log Z$.
+Both candidates are positive and feasible. Since $\log a_i=\log q_i-\eta g_i$,
+\eqref{eq:intro:generalized-kl} gives
+\[
+ \eta\inner{g}{p}+D_\Psi(p,q)
+ =D_\Psi(p,a)+\sum_i(q_i-a_i).
+\]
+The last sum is independent of $p$. For every feasible $p$, expansion gives
+\[
+ D_\Psi(p,a)-D_\Psi(p^+,a)
+ =D_\Psi(p,p^+)+\lambda\bigl(\mathbf1^\top p^+-\mathbf1^\top p\bigr).
+\]
+This identity also holds when $p$ has zero coordinates, with $0\log0=0$.
+On $\Delta_d$, the last term vanishes because both masses equal one.
+On $S_d$, either $A\le1$ and $\lambda=0$, or $A>1$, $\lambda>0$, and
+$\mathbf1^\top p^+=1\ge\mathbf1^\top p$. The difference is therefore at
+least $D_\Psi(p,p^+)\ge\tfrac12\norm{p-p^+}_1^2$ by
+\eqref{eq:intro:entropy-curvature}. Hence $p^+$ is the unique minimizer.
+\end{proof}
+
+\section{Mirror descent}
+\label{sec:intro:mirror-descent}
+
+The movement bound below is used in the storage-control chapter to account for
+changes in the controller's policy.
+
+\begin{Thm:Lemma}[Mirror descent: comparison, regret, and movement {\cite{BECK2003167,bubeck2015convex}}]
+\label{lem:intro:mirror-descent}
+Suppose $\Phi$ is $\sigma$-strongly convex on a convex set $Q$, where
+$\sigma>0$, and $x,x^+\in Q_{\mathrm{ref}}$ satisfy
+\begin{equation}\label{eq:intro:md-update}
+ x^+\in\argmin_{v\in Q}\{\eta\inner{g}{v}+D_\Phi(v,x)\},
+ \qquad\eta>0.
+\end{equation}
+For every $u\in Q$,
+\begin{align}
+ \inner{g}{x-u}
+ &\le\frac{D_\Phi(u,x)-D_\Phi(u,x^+)}{\eta}
+       +\frac\eta{2\sigma}\norm{g}_*^2,
+       \label{eq:intro:md-one-step}\\
+ \norm{x^+-x}&\le\frac\eta\sigma\norm{g}_*.
+       \label{eq:intro:md-movement}
+\end{align}
+For a sequence of these updates with a common step size and
+$g_t\in\partial\ell_t(x_t)$, convexity of $\ell_t$ gives
+\begin{equation}\label{eq:intro:md-regret}
+ \sum_{t=1}^T\bigl(\ell_t(x_t)-\ell_t(u)\bigr)
+ \le\frac{D_\Phi(u,x_1)}\eta
+       +\frac\eta{2\sigma}\sum_{t=1}^T\norm{g_t}_*^2.
+\end{equation}
+The same bound holds for the sum of $\inner{g_t}{x_t-u}$.
+\end{Thm:Lemma}
+\begin{proof}
+Apply Lemma~\ref{lem:pushback} with $f(v)\coloneqq\eta\inner{g}{v}$,
+$\alpha=1$, $y=x$, $\hat x=x^+$, and comparison point $z=u$.
+Both reference points are admissible by $x,x^+\in Q_{\mathrm{ref}}$, so
+\begin{equation}\label{eq:intro:md-pushback}
+ \eta\inner{g}{x^+-u}
+ \le D_\Phi(u,x)-D_\Phi(u,x^+)-D_\Phi(x^+,x).
+\end{equation}
+Adding $\eta\inner{g}{x-x^+}$ and applying H\"older's inequality,
+the curvature bound~\eqref{eq:intro:bregman-curvature}, and Young's
+inequality~\eqref{eq:intro:holder-young} with $\gamma=\sigma$ gives
+\begin{align*}
+ \eta\inner{g}{x-u}
+ &\le D_\Phi(u,x)-D_\Phi(u,x^+)
+   +\eta\norm{g}_*\norm{x-x^+}
+   -\frac\sigma2\norm{x-x^+}^2\\
+ &\le D_\Phi(u,x)-D_\Phi(u,x^+)
+   +\frac{\eta^2}{2\sigma}\norm{g}_*^2.
+\end{align*}
+Dividing by $\eta>0$ proves~\eqref{eq:intro:md-one-step}.
+For movement, set $u=x$ in~\eqref{eq:intro:md-pushback} and apply
+\eqref{eq:intro:bregman-curvature} in both directions:
+\[
+  \sigma\norm{x^+-x}^2
+ \le D_\Phi(x,x^+)+D_\Phi(x^+,x)
+ \le\eta\inner{g}{x-x^+}
+ \le\eta\norm{g}_*\norm{x^+-x}.
+\]
+The last inequality is H\"older's. If $x^+=x$, the movement bound is
+immediate; otherwise divide by $\sigma\norm{x^+-x}>0$ to obtain
+\eqref{eq:intro:md-movement}.
+
+For the sequence of updates, convexity and summation of
+\eqref{eq:intro:md-one-step} with a common step size give
+\begin{align*}
+ \sum_{t=1}^T\bigl(\ell_t(x_t)-\ell_t(u)\bigr)
+ &\le\sum_{t=1}^T\inner{g_t}{x_t-u}\\
+ &\le\frac{D_\Phi(u,x_1)-D_\Phi(u,x_{T+1})}{\eta}
+   +\frac\eta{2\sigma}\sum_{t=1}^T\norm{g_t}_*^2\\
+ &\le\frac{D_\Phi(u,x_1)}\eta
+   +\frac\eta{2\sigma}\sum_{t=1}^T\norm{g_t}_*^2.
+\end{align*}
+The divergences telescope, and the final inequality uses
+$D_\Phi(u,x_{T+1})\ge0$. This proves~\eqref{eq:intro:md-regret} and
+the same bound for the sum of inner products.
+\end{proof}
+
+\section{Projection and positive-part bounds}
+\label{sec:intro:projection}
+
+The projection condition is used to derive the domain-separation update.
+The positive-part bounds below control clipped multipliers and storage
+trajectories.
+
+\begin{Thm:Lemma}[Euclidean projection {\cite{bubeck2015convex}}]\label{lem:intro:projection}
+Let $Q\subseteq\Real^n$ be nonempty, closed, and convex, and define
+$\Pi_Q(v)\coloneqq\argmin_{q\in Q}\norm{q-v}^2$. For $v\in\Real^n$ and $p\in Q$,
+\begin{equation}\label{eq:intro:projection-optimality}
+ p=\Pi_Q(v)
+ \quad\Longleftrightarrow\quad
+ \inner{p-v}{z-p}\ge0\qquad\text{for every }z\in Q.
+\end{equation}
+\end{Thm:Lemma}
+\begin{proof}
+If $p=\Pi_Q(v)$, the right directional derivative of
+$\norm{p+\theta(z-p)-v}^2$ at $\theta=0$ is nonnegative for every
+$z\in Q$, giving $2\inner{p-v}{z-p}\ge0$.
+Conversely, the stated inequality gives
+\[
+ \norm{z-v}^2-\norm{p-v}^2
+ =2\inner{p-v}{z-p}+\norm{z-p}^2
+ \ge\norm{z-p}^2\ge0,
+ \qquad z\in Q.
+\]
+Thus $p$ is the unique minimizer.
+\end{proof}
+
+% Keep the final lemma with its proof at the end of the chapter.
+\begin{samepage}
+\begin{Thm:Lemma}[Positive-part bounds]
+\label{lem:intro:positive-part}
+For $a,b\in\Real$,
+\begin{equation}\label{eq:intro:positive-part-nonexpansive}
+ |[a]_+-[b]_+|\le|a-b|.
+\end{equation}
+For $v\in\Real^n$, with the Euclidean norm and the positive part taken
+componentwise,
+\begin{equation}\label{eq:intro:positive-part-norm}
+ \norm{[v]_+}\le\norm{v}.
+\end{equation}
+\end{Thm:Lemma}
+\begin{proof}
+By symmetry, assume $a\ge b$. Then
+\[
+ [a]_+-[b]_+
+ =\begin{cases}
+  0,&a\le0,\\
+  a-b,&b\ge0,\\
+  a,&b<0<a,
+ \end{cases}
+ \qquad 0\le[a]_+-[b]_+\le a-b.
+\]
+This proves~\eqref{eq:intro:positive-part-nonexpansive}. Applying it
+with $b=0$ in each coordinate and summing squares gives
+$\norm{[v]_+}^2\le\norm{v}^2$, hence
+\eqref{eq:intro:positive-part-norm}.
+\end{proof}
+\end{samepage}

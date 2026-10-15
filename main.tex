@@ -1,0 +1,102 @@
+\documentclass[11pt]{report}
+
+% USC dissertation formatting (USCthesis v1.4.2).
+\usepackage[
+  dissertation,
+  final,
+  raggedbottom
+]{USCthesis}
+
+% Core packages for an engineering dissertation.
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[english]{babel}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{csquotes}
+\usepackage[inline]{enumitem}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{needspace}
+\usepackage{relsize}
+\usepackage{siunitx}
+\usepackage{xcolor}
+
+\usepackage[
+  backend=biber,
+  style=numeric,
+  sorting=none,
+  maxbibnames=99,
+  doi=true,
+  url=true
+]{biblatex}
+\addbibresource{references.bib}
+\AtBeginBibliography{%
+  \interlinepenalty=10000% Keep each entry on one page.
+}
+
+\usepackage[
+  breaklinks=true,
+  colorlinks=true,
+  hypertexnames=false,
+  citecolor={blue!80!black},
+  linkcolor={blue!80!black},
+  urlcolor={blue!80!black}
+]{hyperref}
+
+\graphicspath{{figures/}}
+\sisetup{detect-all,range-phrase=--,range-units=single}
+\captionsetup[table]{font={stretch=1}}
+
+\input{metadata.tex}
+\input{thesis-macros.tex}
+\input{usc-formatting.tex}
+
+\begin{document}
+
+% Front matter follows the order in the USC Graduate School guidelines.
+\begin{preface}
+  % Remove this block if no dedication is needed.
+  \prefacesection{Dedication}
+  \input{frontmatter/dedication.tex}
+
+  \prefacesection{Acknowledgments}
+  \input{frontmatter/acknowledgments.tex}
+
+  {
+    \hypersetup{hidelinks}
+    \tableofcontents
+    \listoftables
+  }
+
+  \prefacesection{Abstract}
+  \input{frontmatter/abstract.tex}
+
+  \prefacesection{Preface}
+  \input{frontmatter/preface.tex}
+\end{preface}
+
+\input{chapters/01-introduction.tex}
+\input{chapters/02-mathematical-preliminaries.tex}
+\input{chapters/03-projection-free-domain.tex}
+\input{chapters/04-projection-free-functional-constraints.tex}
+\input{chapters/05-online-optimization-energy-harvesting.tex}
+\input{chapters/06-online-control-energy-harvesting.tex}
+\input{chapters/07-bandit-rate-adaptation.tex}
+\input{chapters/08-conclusion.tex}
+
+\clearpage
+\chapter*{Bibliography}
+\addcontentsline{toc}{chapter}{Bibliography}
+\begin{singlespace}
+  \raggedright
+  \setlength{\bibitemsep}{\baselineskip}% Double-space between single-spaced entries.
+  \printbibliography[heading=none]
+\end{singlespace}
+
+\end{document}

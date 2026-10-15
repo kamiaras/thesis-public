@@ -1,0 +1,207 @@
+\chapter{Introduction}
+\label{Section:Introduction}
+
+This thesis studies constrained optimization and online resource control
+under different oracle and feedback models. The restrictions arise from
+costly domain projections, resource availability that depends on past
+actions, and service rates that must be learned from binary feedback.
+In the optimization problems,
+linear optimization constructs points in the original domain while
+subgradient updates
+use an auxiliary domain. In energy allocation and scalar storage control,
+parameterizing allocations or policies permits first-order learning, while
+battery feedback and action clipping enforce resource availability.
+The guarantees bound objective gap,
+constraint violation, or regret; the scalar storage guarantee allows
+adversarial arrival and cost sequences. For transmission-rate adaptation,
+confidence bounds based on binary feedback yield a bound on time-average
+expected queue length.
+
+\section{Models and performance criteria}
+
+
+Table~\ref{tab:intro:model-comparison} compares the models, available
+information, performance criteria, and feasibility requirements.
+
+
+\begin{table}[htbp]
+\centering
+\caption[Models, feedback, and performance criteria]{Principal distinctions
+between the research models. Formal assumptions are stated in each chapter.}
+\label{tab:intro:model-comparison}
+\begin{singlespace}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.43\textwidth}>{\raggedright\arraybackslash}p{0.39\textwidth}@{}}
+\toprule
+Chapter & Model and information & Comparison and feasibility \\
+\midrule
+\ref{Section:projfree-domain} &
+Convex objective; linear oracle on $\X$, subgradients on
+$\Y\supseteq\X$, and easy projection onto $\Y$. &
+Fixed minimizer over $\X$; output in $\X$, with auxiliary queries
+permitted outside $\X$. \\[0.5em]
+\ref{Section:projfree} &
+Additional convex inequality constraints; linear oracle on $\X$;
+objective and constraint subgradients and constraint values on $\Y$;
+easy projection onto $\Y$. &
+Upper bound on objective gap at $\bar x\in\X$; upper bound on constraint
+violation if an optimal Lagrange multiplier exists. \\[0.5em]
+\ref{Section:ChapEnergyharvest} &
+Finite battery capacity; i.i.d.\ energy arrivals from an unknown
+distribution, observed before allocation; the full convex allocation-cost
+function is revealed afterward. &
+Expected regret against a fixed allocation whose per-slot expenditure is at
+most the mean energy arrival; only the controller must respect the available
+battery energy on every slot. \\[0.5em]
+\ref{Section:ChapControl} &
+Leaky storage with retention coefficient $0<\alpha<1$ and enough capacity to
+avoid saturation; arbitrary arrivals in $[0,1]$ and entire jointly
+convex state--action cost functions revealed after acting. &
+Regret against fixed policies that allocate fractions of past arrivals over
+time; controller withdrawals never exceed the available resource. \\[0.5em]
+\ref{Section:ChapRateAdaptation} &
+Independent i.i.d.\ arrival and capacity sequences with unknown distributions;
+known lower bound $\varepsilon$ on service slack. Rate in $[0,1]$ chosen
+before observing capacity; binary acknowledgment even for an empty queue. &
+A bound on time-average expected queue length that is independent of $T$. \\
+\bottomrule
+\end{tabular}
+\end{singlespace}
+\end{table}
+
+\section{Contributions}
+
+In Chapters~\ref{Section:projfree-domain} and~\ref{Section:projfree}, $T$
+denotes the query budget for each oracle, including initialization.
+In the online problems, $T$ denotes the number of rounds.
+
+\subsection{Projection-free nonsmooth optimization}
+
+Chapter~\ref{Section:projfree-domain} develops a method that separates the
+construction of feasible points from the evaluation of objective
+subgradients. Linear optimization generates points in the original convex
+domain, while projected subgradient updates operate on an auxiliary domain
+containing it. A multiplier couples the updates. The method returns a
+feasible output with objective gap $O(T^{-1/2})$. Each update requires one linear
+optimization call, one subgradient call, and one auxiliary projection.
+The resulting oracle complexity is $O(\epsilon^{-2})$ for an objective
+gap of at most $\epsilon$.
+
+\subsection{Projection-free optimization with functional constraints}
+
+Chapter~\ref{Section:projfree} formulates a joint bound on objective gap and
+constraint violation. The output belongs to the original domain, and its
+objective gap has an $O(T^{-1/2})$ upper bound. If an optimal Lagrange
+multiplier exists, the constraint violation norm also satisfies an
+$O(T^{-1/2})$ bound. The multiplier affects the guarantee but is not required
+to choose the algorithm parameters.
+
+\subsection{Online allocation with stochastic energy arrivals}
+
+Chapter~\ref{Section:ChapEnergyharvest} develops an energy-allocation
+controller by writing each allocation as the product of total energy usage
+and a vector of allocation proportions. This representation permits
+separate updates: a projected first-order update with battery feedback
+controls total usage, while an entropic mirror-descent update controls the
+proportions. The controller respects available energy on every slot and,
+under the conditional-mean assumption~\eqref{eq:energy:conditional-mean},
+achieves $O(\sqrt{T(1+\log n)})$ expected regret with sufficient battery
+capacity $O(\sqrt T)$. The benchmark is the best fixed nonnegative allocation
+whose total usage does not exceed the mean energy arrival. With the componentwise
+subgradient bound fixed, the dependence on the number of subsystems
+improves from $O(\sqrt n)$ in Yu and Neely~\cite{Yu2019} to
+$O(\sqrt{\log n})$ for $n\ge2$, while the sufficient capacity is independent
+of $n$.
+
+\subsection{Online control of scalar storage}
+
+Chapter~\ref{Section:ChapControl} introduces simplex disturbance-action
+control (SDAC), which parameterizes storage policies by fractions of past
+arrivals assigned to future withdrawals. Entropic mirror descent updates
+the policy parameters, and action clipping limits each withdrawal to the
+resource currently available.
+For arbitrary arrivals in $[0,1]$ and full cost
+feedback, with retention and cost parameters fixed, the controller achieves
+$O(\sqrt{T\log(H+1)})$ regret against the
+best fixed SDAC policy with memory $H$.
+
+Choosing the memory length as a function of the horizon and bounding the
+cost of truncation gives $O(\sqrt{T\log\log T})$ regret against the best
+fixed infinite-memory SDAC policy
+(Corollary~\ref{ch4:cor:regret-vs-infinite-sdac}). This policy class includes
+every feasible scalar fixed-fraction policy under the same dynamics
+(Corollary~\ref{ch4:cor:fraction-as-sdac}), so the guarantee also applies to
+that comparison class.
+
+For retention $\alpha\in(0,1)$ and positive state and action cost
+Lipschitz bounds $L_x,L_u$, define
+$G_\alpha\coloneqq\alpha(L_x/(1-\alpha)+L_u)$.
+For every integer $H\ge1$ and horizon satisfying
+\eqref{ch4:eq:sdac-lower-horizon}, and for every causal feasible controller,
+including randomized controllers,
+Theorem~\ref{ch4:thm:sdac-lower-bound} supplies a deterministic
+arrival and cost sequence fixed before the interaction on which expected
+regret against the fixed memory-$H$ SDAC class is at least
+$G_\alpha\sqrt T/8$. The expectation is over the controller's
+randomization. For fixed $H,\alpha,L_x,L_u$, the upper and lower bounds
+therefore match in their $\sqrt T$ dependence on the horizon $T$.
+Gaps remain in their dependence on memory length $H$ and retention
+coefficient $\alpha$, as quantified in
+Section~\ref{ch4:sec:regret-lower-bound}.
+
+\subsection{Rate adaptation from binary feedback}
+
+Chapter~\ref{Section:ChapRateAdaptation} develops and analyzes a
+transmission-rate controller that applies UCB1 to a finite grid of rates
+using binary success or failure feedback. A known lower bound
+$\varepsilon>0$ on service slack determines the grid resolution. For
+independent i.i.d.\ arrival and capacity sequences and an initially empty
+queue, the controller achieves time-average expected queue length
+$O((1+\log(1/\varepsilon))/\varepsilon^2)$ uniformly over all horizons. A
+matching $\Omega(\varepsilon^{-2}\log(1/\varepsilon))$ lower bound on a suitable
+deterministic instance and horizon shows that the logarithmic factor is
+necessary for this UCB1 controller.
+
+\section{Notation and conventions}
+\label{sec:intro:notation}
+\label{sec:notation}
+
+We write $\Real_+$ for the nonnegative reals, $[n]\coloneqq\{1,\ldots,n\}$,
+$\mathbf1$ for the all-ones vector, and $[v]_+$ for the componentwise positive
+part. Vector inequalities are componentwise. All logarithms are natural unless
+a base is shown. Empty sums are zero.
+For an event $E$, its probability is $\mathbb P(E)$, and its indicator is $\ind{E}$.
+We use $O(\cdot)$ for asymptotic upper bounds, $\Omega(\cdot)$ for
+asymptotic lower bounds, and $\Theta(\cdot)$ for matching upper and lower
+orders. The notation $a\coloneqq b$ defines $a$ as $b$.
+
+Scalar variables and scalar coordinates are italic. In the abstract
+optimization and geometry of Chapters~\ref{Section:Preliminaries}--\ref{Section:projfree},
+plain italic letters also denote vectors, matrices, and linear maps; their
+domains specify their type. In the resource models of
+Chapters~\ref{Section:ChapEnergyharvest} and~\ref{Section:ChapControl}, bold
+letters distinguish whole vectors and matrices from their scalar coordinates,
+as in $\mathbf m_t=(m_{t,1},\ldots,m_{t,H})^\top$.
+Randomness is
+specified by the probability model and conditioning, rather than by case or
+boldface alone.
+
+Coordinate lists for column vectors are written $(v_1,\ldots,v_n)^\top$.
+Scalar coordinates use subscripts: $v_i$ for coordinate $i\in[n]$ and
+$v_{t,i}$ for that coordinate at round $t$. When time and coordinate indices
+occur together, time comes first.
+For vectors, $\inner{x}{y}\coloneqq x^\top y$.
+An unqualified norm in a Euclidean argument is the Euclidean norm.
+
+The unqualified symbol $\Pi_Q$ denotes Euclidean projection onto $Q$.
+
+We write $\Reg_T(\mathcal C)$ for the controller's cumulative cost minus
+the infimum comparator cost over $\mathcal C$, evaluated in hindsight on
+the same realized inputs. Expected regret is $\E[\Reg_T(\mathcal C)]$.
+
+\section{Organization of the thesis}
+
+Chapter~\ref{Section:Preliminaries} collects the convex-analysis,
+Bregman-divergence, and mirror-descent tools used in the research chapters
+outlined above. The final chapter brings the results together and
+identifies directions for further work.

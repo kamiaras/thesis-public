@@ -1,0 +1,59 @@
+% Local corrections against the USC Graduate School formatting guidelines.
+% Keep the archived upstream USCthesis package unchanged.
+\usepackage{eso-pic}
+
+% Reserve space for descenders and deep display formulas while leaving the
+% page-number baseline fixed. The nominal one-inch text margins are retained.
+\setlength{\topskip}{12pt}
+\addtolength{\textheight}{-8pt}
+\addtolength{\footskip}{8pt}
+% Leave a small allowance for italic glyphs, including theorem paragraphs
+% whose list setup resets rightskip. The title uses its own fixed coordinates.
+\addtolength{\textwidth}{-2bp}
+
+\makeatletter
+% A full single-spaced baseline between major entries gives double separation.
+\let\usc@originaltableofcontents\tableofcontents
+\renewcommand{\tableofcontents}{%
+  \begingroup
+  \setlength{\cftbeforechapskip}{13.6pt}%
+  \addtolength{\cftchapnumwidth}{0.6em}% space between chapter numbers and titles
+  \usc@originaltableofcontents
+  \endgroup
+}
+
+% Anchor each block to the official PhD sample (physical page 8 of the USC
+% guidelines). Coordinates are PDF points from the top-left paper corner.
+\newcommand{\usc@titleblock}[3]{%
+  \put(72,-#1){\makebox(468,0)[t]{%
+    \parbox[t]{468bp}{\normalfont\fontsize{12}{#2}\selectfont
+      \centering #3\par}}}%
+}
+\renewcommand{\maketitle}{%
+  \begin{titlepage}
+  \thispagestyle{empty}
+  \AddToShipoutPictureFG*{%
+    \AtPageUpperLeft{%
+      \setlength{\unitlength}{1bp}%
+      \usc@titleblock{143}{27}{\@title}%
+      \usc@titleblock{210.5}{13.5}{by}%
+      \usc@titleblock{251}{13.5}{\@author}%
+      \usc@titleblock{372.5}{13.5}{%
+        A Dissertation Presented to the\\
+        FACULTY OF THE USC GRADUATE SCHOOL\\
+        UNIVERSITY OF SOUTHERN CALIFORNIA\\
+        In Partial Fulfillment of the\\
+        Requirements for the Degree\\
+        DOCTOR OF PHILOSOPHY\\
+        (\@majorfield)}%
+      \usc@titleblock{548}{13.5}{\@submitdate}%
+      \put(72,-702){\makebox(468,0)[l]{%
+        \normalfont\fontsize{12}{13.5}\selectfont
+        Copyright \@copyrightyear\hfill\@author}}%
+    }}%
+  \null
+  \end{titlepage}%
+}
+\hypersetup{pdftitle={\@title},pdfauthor={\@author},
+  pdfsubject={Doctor of Philosophy in Electrical Engineering}}
+\makeatother
