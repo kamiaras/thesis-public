@@ -31,9 +31,9 @@ transmission supplies none. We seek a bound on time-average expected queue
 length that holds uniformly over all horizons, including the learning period.
 
 Chapter~\ref{Section:ChapControl}
-studies feasible storage policies under full cost feedback. Here, feedback is
-limited to binary acknowledgments, so service characteristics must be
-learned as the queue evolves.
+studies feasible storage policies under full cost feedback. Here, the
+transmitter must estimate the mean offered service of each grid rate from
+transmission successes and failures, while new work continues to arrive.
 
 The action space is the interval $[0,1]$. For a fixed rate, mean
 \emph{offered service} is the rate multiplied by its probability of success.
@@ -48,13 +48,15 @@ lower bound determines the rate grid.
 
 Scheduling and resource allocation in networks have been studied with
 objectives such as power efficiency, utility, and
-fairness~\cite{Cruz2003,palomar2006tutorial,Songwu1999}. Lyapunov drift provides
-a standard way to relate the margin by which mean service exceeds mean
-arrivals to queue bounds~\cite{neely2010stochastic}.
+fairness~\cite{Cruz2003,palomar2006tutorial,Songwu1999}. Lyapunov drift analysis is a
+standard method for bounding time-average expected queue
+length~\cite{neely2010stochastic}.
 
 This chapter applies the classical UCB1 policy~\cite{Auer2002FinitetimeAO}
-to a finite grid of transmission rates. The policy selects rates using their
-estimated mean service together with an allowance for uncertainty.
+to a finite grid of transmission rates. After trying each rate once, the
+policy chooses the rate with the largest estimated mean service plus an
+exploration bonus. At a given time, this bonus is larger for rates tried
+fewer times.
 Background on bandit learning is given
 in~\cite{Lai1985,cesa2006prediction,bubeck2012regret,lattimore2020bandit}.
 
@@ -89,27 +91,29 @@ studied under continuity assumptions on mean rewards~\cite{Agrawal1995}.
 Other work constructs and refines finite sets of actions using bounds on
 how much rewards can differ between nearby
 actions~\cite{Kleinberg2008,pmlr-v134-podimata21a}.
-In our model, lowering a transmission rate cannot reduce its probability
-of success. This structure and the known slack lower bound let us choose a
-fixed grid containing a rate whose mean service exceeds the mean arrival
-rate, even when mean service has jumps.
+Because lowering a rate preserves successful transmissions, we can use the
+known slack lower bound to choose a grid containing a rate whose mean service
+exceeds mean arrivals. This remains possible even when mean service is
+discontinuous as a function of the attempted rate.
 
 Learning to set prices provides a useful interpretation~\cite{Kleinberg2003}.
 A purchase occurs when the buyer's value is at least the offered price,
 just as a transmission succeeds when channel capacity is at least the
 selected rate. Revenue corresponds to offered service. Rounding a price
-or rate down to the nearest grid point preserves success and limits the
-loss from using a finite grid. The pricing construction in~\cite{Kleinberg2003}
+down cannot prevent a purchase that would otherwise occur, and rounding a
+rate down cannot prevent a successful transmission. Expected revenue or
+mean offered service can decrease by at most the amount rounded off.
+The pricing construction in~\cite{Kleinberg2003}
 chooses the grid using the horizon. Here, the given lower bound on service
 slack determines a grid that remains fixed for all horizons.
 
 Audibert, Munos, and Szepesv{\'a}ri~\cite[Appendix~A.2,
 Proposition~1 and Lemma~4]{audibert2009exploration} show that UCB1 continues
 selecting a suboptimal arm even when both arms have deterministic
-rewards. Their proof compares the two UCB indices. Here, an analogous
-comparison bounds how often UCB1 selects rates that supply service.
-The resulting service deficit gives a
-queue-length lower bound with constant arrivals and channel capacity.
+rewards. Their proof compares the two UCB indices. In our deterministic
+example, the index comparison shows that UCB1 selects successful rates too
+infrequently to keep up with arrivals over a chosen horizon. The resulting
+accumulation of work gives the lower bound on time-average queue length.
 \subsection{Contributions and scope}
 \label{ch5:subsec:contributions}
 
@@ -211,8 +215,9 @@ Necessarily $0<\varepsilon\le1$: \eqref{ch5:eq:slack} gives
 $\varepsilon\le \mu(r^*)-\lambda$, while \eqref{ch5:eq:g} gives $\mu(r^*)\le1$
 and Assumption~\ref{ch5:ass:environment} gives $\lambda\ge0$.
 The supplied $\varepsilon$ may be smaller than the actual slack
-$\mu(r^*)-\lambda$. A smaller supplied bound gives a finer grid and a weaker
-worst-case guarantee.
+$\mu(r^*)-\lambda$. Supplying a smaller value of $\varepsilon$ can increase
+the number of grid rates and increases the proved upper bound on
+time-average expected queue length.
 
 \subsection{Performance criterion and fixed-rate benchmark}
 
@@ -287,8 +292,9 @@ Here $Q(1)=0$. Division by $2\varepsilon T$ gives
 \section{Discretizing the rate space}
 \label{ch5:sec:discretization}
 
-The following one-sided bound controls the mean-service loss under
-downward rounding and yields a grid with positive service slack.
+Lowering a transmission rate by $d$ can reduce its mean offered service by
+at most $d$. We use this fact to choose a finite grid containing at least
+one rate whose mean service exceeds mean arrivals.
 
 \begin{Thm:Lemma}[Mean-service bound for lowering a rate]
 \label{ch5:lem:onesided}
@@ -442,9 +448,10 @@ evaluated at $t-1$.
 \section{Main guarantees}
 \label{ch5:sec:guarantees}
 
-The first result bounds the queue under UCB1 at every horizon. The next
-two results distinguish the unavoidable cost for any causal policy from
-the larger worst-case cost of this particular algorithm.
+The upper bounds control the queue under UCB1 uniformly over all horizons
+and in the long run. One lower bound shows how large the time-average
+expected queue length can be for any causal policy. The other gives a
+larger worst-case lower bound specifically for UCB1.
 
 \begin{Thm:Theorem}[Uniform bound on time-average expected queue length]
 \label{ch5:upper:thm:main}
@@ -460,6 +467,21 @@ For every integer $T\ge1$,
 In particular, the worst-case time-average expected queue length is
 $O\bigl(\varepsilon^{-2}\log(1/\varepsilon)\bigr)$ as $\varepsilon\downarrow0$.
 \end{Thm:Theorem}
+
+\begin{Thm:Remark}[Long-run queue length]
+\label{ch5:upper:rem:long-run}
+Under Assumptions~\ref{ch5:ass:environment} and~\ref{ch5:ass:slack}, run
+Algorithm~\ref{ch5:upper:alg:ucb} from $Q(1)=0$.
+For each fixed environment and supplied slack lower bound $\varepsilon$, the
+long-run time-average expected queue length satisfies
+\begin{equation}
+ \limsup_{T\to\infty}\overline Q_T
+ \le\frac3{4\varepsilon}.
+ \label{ch5:upper:eq:long-run-bound}
+\end{equation}
+This long-run bound has the same $O(1/\varepsilon)$ order as the
+fixed-rate benchmark bound~\eqref{ch5:eq:oracle}.
+\end{Thm:Remark}
 
 The following result is restated in this chapter's notation
 from~\cite[Theorem~2]{wijewardena2026banditbased}.
@@ -529,15 +551,18 @@ this history, so the selected gap $\Delta(t)$ gives the decomposition
  =-\sigma+\Delta(t).
  \label{ch5:upper:eq:conditional-mean}
 \end{equation}
-Following~\cite{Freund2023}, Lemmas~\ref{ch5:upper:lem:stage-one}
-and~\ref{ch5:upper:lem:stage-two} derive an auxiliary-queue comparison
-and a queue-weighted drift bound from this identity.
-For fixed $K$ and $\sigma$, the comparison bound grows logarithmically
-with the horizon, while the learning term in the drift bound tends to zero.
-Section~\ref{ch5:upper:sec:combination} therefore uses the comparison bound
-for shorter horizons and the drift bound for longer horizons to obtain a
-bound independent of $T$. This split is used only in the proof. The
-controller follows the same UCB1 rule throughout.
+Following~\cite{Freund2023}, we use this identity to derive two bounds on
+time-average expected queue length. Lemma~\ref{ch5:upper:lem:stage-one}
+compares the actual queue with an auxiliary queue having a fixed negative
+conditional mean net input. Lemma~\ref{ch5:upper:lem:stage-two} studies the
+expected change in squared queue length and accounts for the mean service
+lost by selecting suboptimal rates, weighted by the current queue length.
+For fixed $K$ and $\sigma$, the first bound grows logarithmically with the
+horizon, while the second approaches a constant as the horizon grows.
+Section~\ref{ch5:upper:sec:combination}
+therefore uses the first bound for shorter horizons and the second for
+longer horizons to obtain a bound independent of $T$. This split is used
+only in the proof. The controller follows the same UCB1 rule throughout.
 
 
 \subsection{Accuracy of service estimates under adaptive sampling}
@@ -968,10 +993,11 @@ Let
  Z_T\coloneqq\sum_{t=1}^{T}Q(t).
 \]
 Then $\E[Z_T]=T\overline Q_T$ by~\eqref{ch5:eq:performance}.
-The queue-length bound refines an inequality
-of Huang, Golubchik, and
-Huang~\cite{Huang2024}, using the largest backlog as
-in~\cite[Lemma~3.4]{Freund2025transient}.
+Because the queue can grow by at most one unit per slot, a large peak
+requires substantial backlog in the preceding slots. We use this
+observation to bound the largest queue length in terms of the sum of queue
+lengths. This argument follows~\cite[Lemma~3.4]{Freund2025transient} and
+refines an inequality of Huang, Golubchik, and Huang~\cite{Huang2024}.
 
 \begin{Thm:Lemma}[Two deterministic bounds]
 \label{ch5:upper:lem:deterministic}
@@ -1208,16 +1234,20 @@ y_T
        y_T^{3/4}
  =\frac12+\frac4T+a_T^{1/4}y_T^{3/4}\\
  &\overset{\mathrm{(D)}}{\le}\frac12+\frac4T
-   +\frac{(a_T^{1/4})^4}{4}+\frac34(y_T^{3/4})^{4/3}
- =\frac12+\frac4T+\frac14a_T+\frac34y_T.
+    +\frac14a_T+\frac34y_T.
 \end{align*}
 Step (A) divides~\eqref{ch5:upper:eq:summed-drift} by $T$;
-(B) uses~\eqref{ch5:upper:eq:learning-term-pathwise};
-(C) is Jensen's inequality~\eqref{eq:intro:jensen-power} with $\theta=3/4$.
+(B) uses~\eqref{ch5:upper:eq:learning-term-pathwise}.
 The equalities use~\eqref{ch5:upper:eq:normalized-drift-quantities}
 and give~\eqref{ch5:upper:eq:implicit-drift}.
-Step (D) is Young's inequality~\eqref{eq:intro:young-conjugate}
-with $(p,q)=(4,4/3)$ and $(a,b)=(a_T^{1/4},y_T^{3/4})$.
+For (C) and (D), concavity of $z\mapsto z^{3/4}$ gives the tangent bound
+\[
+ z^{3/4}\le\frac34r^{-1/4}z+\frac14r^{3/4},\qquad z\ge0,\quad r>0.
+\]
+For (C), set $r=\E[Z_T]$ and take expectations with $z=Z_T$;
+if $\E[Z_T]=0$, then $Z_T=0$ almost surely and (C) is immediate.
+For (D), set $r=a_T$, $z=y_T$, and multiply by $a_T^{1/4}$ to obtain
+$a_T^{1/4}y_T^{3/4}\le a_T/4+3y_T/4$; the case $a_T=0$ is immediate.
 Rearranging and dividing by $\sigma>0$ gives
 \begin{align}
  \frac14y_T&\le\frac12+\frac4T+\frac14a_T,
@@ -1228,6 +1258,17 @@ Rearranging and dividing by $\sigma>0$ gives
  \label{ch5:upper:eq:combination-drift}
 \end{align}
 This is~\eqref{ch5:upper:eq:stage-two}.
+\end{proof}
+
+\begin{proof}[Proof of Remark~\ref{ch5:upper:rem:long-run}]
+With $K$ and $\sigma$ fixed, the definitions
+in~\eqref{ch5:upper:eq:normalized-drift-quantities}
+and $\Gamma(T)=O((\log T)^2)$ give $a_T\to0$.
+The explicit estimate~\eqref{ch5:upper:eq:stage-two} shows that $y_T$
+stays bounded, so the learning term in~\eqref{ch5:upper:eq:implicit-drift}
+vanishes. Taking the limit superior in~\eqref{ch5:upper:eq:implicit-drift} and using
+$y_T=\sigma\overline Q_T$ and $\sigma\ge2\varepsilon/3$
+from~\eqref{ch5:eq:grid-positive-slack} proves the bound.
 \end{proof}
 
 \subsection{Combining the two bounds}
@@ -1244,7 +1285,7 @@ Apply \eqref{ch5:upper:eq:combination-comparison} for
 $2\le T\le T_{\mathrm{cut}}$ and
 \eqref{ch5:upper:eq:combination-drift} for $T\ge T_{\mathrm{cut}}$.
 The numerical estimates verified in
-Section~\ref{ch5:upper:sec:constant-verification} give, for $T\ge2$,
+Appendix~\ref{ch5:upper:sec:constant-verification} give, for $T\ge2$,
 \begin{equation*}
 \varepsilon^2\overline Q_T
  \overset{\mathrm{(A)}}{\le}
@@ -1259,206 +1300,7 @@ and~\eqref{ch5:upper:eq:long-numerical-constant}. Together with the case $T=1$,
 this proves~\eqref{ch5:upper:eq:uniform-bound}.
 \end{proof}
 
-\subsection{Verification of the numerical constant}
-\label{ch5:upper:sec:constant-verification}
 
-We verify the two numerical estimates used in the proof of
-Theorem~\ref{ch5:upper:thm:main}. Set
-$\ell_\varepsilon\coloneqq\log(1/\varepsilon)\ge0$ and
-$c\coloneqq29/2$. The cutoff in~\eqref{ch5:upper:eq:cutoff-definition}
-is therefore $T_{\mathrm{cut}}=e^c\varepsilon^{-6}$.
-
-To account for rounding the grid size up to an integer, put
-$\kappa\coloneqq K\varepsilon$. Since $K=\lceil3/\varepsilon\rceil$,
-$3\le\kappa\le4$. Consequently,
-\begin{align}
- \frac1\sigma
- &\overset{\text{(A)}}{\le}\frac1\varepsilon\frac{\kappa}{\kappa-1}
- \overset{\text{(B)}}{\le}\frac3{2\varepsilon},
- \label{ch5:upper:eq:slack-coefficient}\\
- \frac K\sigma
- &\overset{\text{(A)}}{\le}\frac1{\varepsilon^2}\frac{\kappa^2}{\kappa-1}
- \overset{\text{(B)}}{\le}\frac{16}{3\varepsilon^2},
- \label{ch5:upper:eq:linear-grid-coefficient}\\
- \frac{\sqrt{2K}}\sigma
- &\overset{\text{(A)}}{\le}\frac1{\varepsilon^{3/2}}\frac{\sqrt{2\kappa^3}}{\kappa-1}
- \overset{\text{(B)}}{\le}\sqrt{\frac{128}{9}}\,\varepsilon^{-3/2},
- \label{ch5:upper:eq:square-root-grid-coefficient}\\
- \frac{K^2}{\sigma^4}
- &\overset{\text{(A)}}{\le}\frac1{\varepsilon^6}\frac{\kappa^6}{(\kappa-1)^4}
- \overset{\text{(B)}}{\le}\frac{4096}{81\varepsilon^6}.
- \label{ch5:upper:eq:drift-grid-coefficient}
-\end{align}
-In these four bounds, (A) substitutes $K=\kappa/\varepsilon$ and
-$\sigma\ge\varepsilon(\kappa-1)/\kappa$, the latter being
-\eqref{ch5:eq:grid-slack-lower}. For (B), $\kappa/(\kappa-1)=1+1/(\kappa-1)$ is at most
-$3/2$ because $\kappa\ge3$. The last three coefficients are largest at $\kappa=4$.
-To check this, note
-that on $[3,4]$,
-\[
- \frac{\mathrm d}{\mathrm d\kappa}\frac{\kappa^2}{\kappa-1}
- =\frac{\kappa(\kappa-2)}{(\kappa-1)^2}\ge0,
- \qquad
- \frac{\mathrm d}{\mathrm d\kappa}\frac{\kappa^3}{(\kappa-1)^2}
- =\frac{\kappa^2(\kappa-3)}{(\kappa-1)^3}\ge0.
-\]
-The third coefficient is the square root of $2\kappa^3/(\kappa-1)^2$.
-The fourth is $\kappa^6/(\kappa-1)^4=(\kappa^3/(\kappa-1)^2)^2$.
-
-First consider the shorter horizons, $2\le T\le T_{\mathrm{cut}}$. The cutoff gives
-\begin{equation}
- \begin{aligned}
- \log T&\overset{\text{(A)}}{\le}c+6\ell_\varepsilon,\\
- \varepsilon\log T
- &\le e^{-\ell_\varepsilon}
-   (c+6\ell_\varepsilon)
- \overset{\text{(B)}}{\le}c.
- \end{aligned}
- \label{ch5:upper:eq:short-log-bounds}
-\end{equation}
-Here (A) takes logarithms of $T\le T_{\mathrm{cut}}=e^c\varepsilon^{-6}$
-from~\eqref{ch5:upper:eq:cutoff-definition}.
-Step (B) evaluates the decreasing
-function at $\ell_\varepsilon=0$, since $c=29/2>6$ gives, for
-$\ell_\varepsilon\ge0$,
-\[
- \frac{\mathrm d}{\mathrm d\ell_\varepsilon}
- \left[e^{-\ell_\varepsilon}(c+6\ell_\varepsilon)\right]
- =e^{-\ell_\varepsilon}(6-c-6\ell_\varepsilon)<0.
-\]
-The constant terms in the comparison bound satisfy
-\begin{equation}
- \frac{\varepsilon^2}{2}+\frac{\varepsilon^2}{4\sigma}
- \overset{\text{(A)}}{\le}\frac{\varepsilon^2}{2}+\frac{3\varepsilon}{8}
- \overset{\text{(B)}}{\le}\frac12+\frac38=\frac78,
- \label{ch5:upper:eq:short-constant-bound}
-\end{equation}
-where (A) uses \eqref{ch5:upper:eq:slack-coefficient} and (B) uses
-$0<\varepsilon\le1$. We obtain
-\begin{align}
-\varepsilon^2\overline Q_T
- &\overset{\text{(A)}}{\le}\frac{\varepsilon^2}{2}+\frac{\varepsilon^2}{4\sigma}
- +\frac{\varepsilon^2\sqrt{2K}}{\sigma}\sqrt{\log T}
-+\frac{2\varepsilon^2K}{\sigma}\log T\notag\\
-&\overset{\text{(B)}}{\le}\frac78+\sqrt{\frac{128}{9}\,\varepsilon\log T}
- +\frac{32}{3}\log T\notag\\
-&\overset{\text{(C)}}{\le}\frac78+\sqrt{\frac{128c}{9}}
- +\frac{32c}{3}+64\ell_\varepsilon.
-\label{ch5:upper:eq:short-horizon-bound}
-\end{align}
-Step (A) uses \eqref{ch5:upper:eq:combination-comparison}. Step (B) uses
-\eqref{ch5:upper:eq:short-constant-bound},
-\eqref{ch5:upper:eq:square-root-grid-coefficient}, and
-\eqref{ch5:upper:eq:linear-grid-coefficient} for the three terms,
-respectively. Step (C) applies both bounds in
-\eqref{ch5:upper:eq:short-log-bounds}.
-
-Now consider the longer horizons, $T\ge T_{\mathrm{cut}}$, and
-use~\eqref{ch5:upper:eq:combination-drift}. We will show that
-its learning term decreases throughout this range. With $z\coloneqq\log T$, set
-\[
- G(z)\coloneqq\Gamma(e^z)=\frac13+8z+8z^2.
-\]
-The factor $\Gamma(T)^2/T$ then becomes $e^{-z}G(z)^2$.
-For $z>0$,
-\begin{align}
- 2G(z)-zG'(z)&=\frac23+8z>0,
- \qquad \frac{G'(z)}{G(z)}\le\frac2z,
- \label{ch5:upper:eq:G-log-derivative}\\
- \frac{\mathrm d}{\mathrm dz}\log\!\left(e^{-z}G(z)^2\right)
- &=-1+2\frac{G'(z)}{G(z)}\le-1+\frac4z.
- \label{ch5:upper:eq:horizon-monotonicity}
-\end{align}
-Thus $\Gamma(T)^2/T$ is nonincreasing for $T\ge e^4$.
-Since $T_{\mathrm{cut}}\ge e^c>e^4$, substituting
-$T_{\mathrm{cut}}=e^c\varepsilon^{-6}=e^{c+6\ell_\varepsilon}$ and
-$\Gamma(T_{\mathrm{cut}})=G(c+6\ell_\varepsilon)$ gives
-\begin{align}
- \overline Q_T
- &\overset{\text{(A)}}{\le}\frac3\varepsilon+\frac{24}{T\varepsilon}
- +\frac{8192}{81\varepsilon^6}\frac{\Gamma(T)^2}{T}\notag\\
- &\overset{\text{(B)}}{\le}\frac3\varepsilon+\frac{24}{T_{\mathrm{cut}}\varepsilon}
- +\frac{8192}{81\varepsilon^6}\frac{\Gamma(T_{\mathrm{cut}})^2}{T_{\mathrm{cut}}}\notag\\
- &=\frac3\varepsilon+24e^{-c}\varepsilon^5
- +\frac{8192}{81}e^{-c}G(c+6\ell_\varepsilon)^2.
- \label{ch5:upper:eq:long-cutoff-bound}
-\end{align}
-Here (A) applies \eqref{ch5:upper:eq:slack-coefficient} and
-\eqref{ch5:upper:eq:drift-grid-coefficient} to
-\eqref{ch5:upper:eq:combination-drift}. Step (B) uses $T\ge T_{\mathrm{cut}}$ for
-$1/T$ and \eqref{ch5:upper:eq:horizon-monotonicity} for the learning term.
-After multiplying the queue bound by $\varepsilon^2=e^{-2\ell_\varepsilon}$,
-the remaining expression involving $G$ is also decreasing in
-$\ell_\varepsilon$. Indeed,
-\begin{equation}
-\begin{aligned}
- \frac{\mathrm d}{\mathrm d\ell_\varepsilon}
- \log\!\left(e^{-2\ell_\varepsilon}
-            G(c+6\ell_\varepsilon)^2\right)
- &=-2+12\frac{G'(c+6\ell_\varepsilon)}{G(c+6\ell_\varepsilon)}\\
- &\overset{\text{(A)}}{\le}-2+\frac{24}{c+6\ell_\varepsilon}
- \overset{\text{(B)}}{<}0.
-\end{aligned}
- \label{ch5:upper:eq:slack-monotonicity}
-\end{equation}
-Step (A) is \eqref{ch5:upper:eq:G-log-derivative} at
-$z=c+6\ell_\varepsilon$. Step (B) uses $c=29/2>12$ and
-$\ell_\varepsilon\ge0$. Multiplying
-\eqref{ch5:upper:eq:long-cutoff-bound} by $\varepsilon^2$
-therefore gives
-\begin{equation}
-\begin{aligned}
-\varepsilon^2\overline Q_T
- &\le3\varepsilon+24e^{-c}\varepsilon^7
- +\frac{8192}{81}e^{-c}e^{-2\ell_\varepsilon}
-   G(c+6\ell_\varepsilon)^2\\
- &\overset{\text{(A)}}{\le}3+e^{-c}
-   \left(24+\frac{8192}{81}G(c)^2\right).
-\end{aligned}
- \label{ch5:upper:eq:long-horizon-bound}
-\end{equation}
-Step (A) uses $\varepsilon\le1$ for the first two terms and
-\eqref{ch5:upper:eq:slack-monotonicity} to bound the last term by its
-value at $\ell_\varepsilon=0$.
-For the fixed choice $c=29/2$, both numerical coefficients are smaller
-than $170$:
-\begin{align}
-\frac78+\sqrt{\frac{128c}{9}}+\frac{32c}{3}
- &=\frac78+\frac{8\sqrt{29}}3+\frac{464}3<169.903,
-\label{ch5:upper:eq:short-numerical-constant}\\
-G(c)&=\frac13+8\frac{29}{2}
-               +8\left(\frac{29}{2}\right)^2
-             =\frac{5395}{3},\notag\\
-3+e^{-c}\left(24+\frac{8192}{81}G(c)^2\right)
- &=3+e^{-29/2}
-   \left(24+\frac{8192}{81}\left(\frac{5395}{3}\right)^2\right)
-<167.959.
-\label{ch5:upper:eq:long-numerical-constant}
-\end{align}
-These are direct evaluations of the constants in
-\eqref{ch5:upper:eq:short-horizon-bound} and
-\eqref{ch5:upper:eq:long-horizon-bound}, with the displayed decimals
-rounded upward.
-
-\begin{Thm:Remark}[Long-run queue length]
-For each fixed environment and supplied slack lower bound $\varepsilon$, the
-long-run time-average expected queue length satisfies
-\begin{equation}
- \limsup_{T\to\infty}\overline Q_T
- \le\frac3{4\varepsilon}.
- \label{ch5:upper:eq:long-run-bound}
-\end{equation}
-With $K$ and $\sigma$ fixed, the definitions
-in~\eqref{ch5:upper:eq:normalized-drift-quantities}
-and $\Gamma(T)=O((\log T)^2)$ give $a_T\to0$.
-The explicit estimate~\eqref{ch5:upper:eq:stage-two} shows that $y_T$
-stays bounded, so the learning term in~\eqref{ch5:upper:eq:implicit-drift}
-vanishes. Taking the limit superior in~\eqref{ch5:upper:eq:implicit-drift} and using
-$y_T=\sigma\overline Q_T$ and $\sigma\ge2\varepsilon/3$
-from~\eqref{ch5:eq:grid-positive-slack} proves the bound.
-This long-run bound has the same $O(1/\varepsilon)$ order as the
-fixed-rate benchmark bound~\eqref{ch5:eq:oracle}.
-\end{Thm:Remark}
 
 \section{Lower-bound analysis}
 \label{ch5:lower:section}
@@ -1466,7 +1308,9 @@ fixed-rate benchmark bound~\eqref{ch5:eq:oracle}.
 Theorem~\ref{ch5:lower:theorem} gives the lower bound for every causal
 policy. Its proof is in the original paper. Here we prove the stronger
 bound for the prescribed UCB1 policy by constructing a deterministic
-environment in which exploration limits the service supplied to the queue.
+environment in which only six grid rates provide positive service. UCB1
+spends many slots trying the remaining rates, which always fail, allowing
+incoming work to accumulate.
 
 \subsection{A matching lower bound for UCB1}
 \label{ch5:lower:ucb-log-proof}
@@ -1668,7 +1512,198 @@ arrivals and capacities.
 
 For each fixed environment and supplied $\varepsilon$, the long-run
 bound~\eqref{ch5:upper:eq:long-run-bound} is $O(\varepsilon^{-1})$.
-The larger uniform bound accounts for the transient
-queue buildup during learning. The UCB1 lower bound exhibits such buildup
-at $T_\varepsilon$. It remains unresolved whether another causal policy
-can remove the logarithmic factor from the uniform bound.
+The bound that holds for every horizon must also cover queue buildup while
+UCB1 learns which rates provide enough service. The UCB1 lower bound
+exhibits such buildup at $T_\varepsilon$. The long-run bound concerns
+time averages over increasingly long horizons; the contribution of any
+fixed initial set of slots vanishes in these averages. It remains unresolved
+whether another causal policy, under the same information assumptions, can
+guarantee a time-average expected queue length of $O(\varepsilon^{-2})$ for
+every horizon and every environment satisfying the model assumptions.
+
+\clearpage
+\begingroup
+\renewcommand{\thesection}{\thechapter.\Alph{section}}
+\renewcommand{\theHsection}{\theHchapter.appendix.\Alph{section}}
+\setcounter{section}{0}
+\section{Appendix: Verification of the numerical constant}
+\label{ch5:upper:sec:constant-verification}
+
+We verify the two numerical estimates used in the proof of
+Theorem~\ref{ch5:upper:thm:main}. Set
+$\ell_\varepsilon\coloneqq\log(1/\varepsilon)\ge0$ and
+$c\coloneqq29/2$. The cutoff in~\eqref{ch5:upper:eq:cutoff-definition}
+is therefore $T_{\mathrm{cut}}=e^c\varepsilon^{-6}$.
+
+To account for rounding the grid size up to an integer, put
+$\kappa\coloneqq K\varepsilon$. Since $K=\lceil3/\varepsilon\rceil$,
+$3\le\kappa\le4$. Consequently,
+\begin{align}
+ \frac1\sigma
+ &\overset{\text{(A)}}{\le}\frac1\varepsilon\frac{\kappa}{\kappa-1}
+ \overset{\text{(B)}}{\le}\frac3{2\varepsilon},
+ \label{ch5:upper:eq:slack-coefficient}\\
+ \frac K\sigma
+ &\overset{\text{(A)}}{\le}\frac1{\varepsilon^2}\frac{\kappa^2}{\kappa-1}
+ \overset{\text{(B)}}{\le}\frac{16}{3\varepsilon^2},
+ \label{ch5:upper:eq:linear-grid-coefficient}\\
+ \frac{\sqrt{2K}}\sigma
+ &\overset{\text{(A)}}{\le}\frac1{\varepsilon^{3/2}}\frac{\sqrt{2\kappa^3}}{\kappa-1}
+ \overset{\text{(B)}}{\le}\sqrt{\frac{128}{9}}\,\varepsilon^{-3/2},
+ \label{ch5:upper:eq:square-root-grid-coefficient}\\
+ \frac{K^2}{\sigma^4}
+ &\overset{\text{(A)}}{\le}\frac1{\varepsilon^6}\frac{\kappa^6}{(\kappa-1)^4}
+ \overset{\text{(B)}}{\le}\frac{4096}{81\varepsilon^6}.
+ \label{ch5:upper:eq:drift-grid-coefficient}
+\end{align}
+In these four bounds, (A) substitutes $K=\kappa/\varepsilon$ and
+$\sigma\ge\varepsilon(\kappa-1)/\kappa$, the latter being
+\eqref{ch5:eq:grid-slack-lower}. For (B), $\kappa/(\kappa-1)=1+1/(\kappa-1)$ is at most
+$3/2$ because $\kappa\ge3$. The last three coefficients are largest at $\kappa=4$.
+To check this, note
+that on $[3,4]$,
+\[
+ \frac{\mathrm d}{\mathrm d\kappa}\frac{\kappa^2}{\kappa-1}
+ =\frac{\kappa(\kappa-2)}{(\kappa-1)^2}\ge0,
+ \qquad
+ \frac{\mathrm d}{\mathrm d\kappa}\frac{\kappa^3}{(\kappa-1)^2}
+ =\frac{\kappa^2(\kappa-3)}{(\kappa-1)^3}\ge0.
+\]
+The third coefficient is the square root of $2\kappa^3/(\kappa-1)^2$.
+The fourth is $\kappa^6/(\kappa-1)^4=(\kappa^3/(\kappa-1)^2)^2$.
+
+First consider the shorter horizons, $2\le T\le T_{\mathrm{cut}}$. The cutoff gives
+\begin{equation}
+ \begin{aligned}
+ \log T&\overset{\text{(A)}}{\le}c+6\ell_\varepsilon,\\
+ \varepsilon\log T
+ &\le e^{-\ell_\varepsilon}
+   (c+6\ell_\varepsilon)
+ \overset{\text{(B)}}{\le}c.
+ \end{aligned}
+ \label{ch5:upper:eq:short-log-bounds}
+\end{equation}
+Here (A) takes logarithms of $T\le T_{\mathrm{cut}}=e^c\varepsilon^{-6}$
+from~\eqref{ch5:upper:eq:cutoff-definition}.
+Step (B) evaluates the decreasing
+function at $\ell_\varepsilon=0$, since $c=29/2>6$ gives, for
+$\ell_\varepsilon\ge0$,
+\[
+ \frac{\mathrm d}{\mathrm d\ell_\varepsilon}
+ \left[e^{-\ell_\varepsilon}(c+6\ell_\varepsilon)\right]
+ =e^{-\ell_\varepsilon}(6-c-6\ell_\varepsilon)<0.
+\]
+The constant terms in the comparison bound satisfy
+\begin{equation}
+ \frac{\varepsilon^2}{2}+\frac{\varepsilon^2}{4\sigma}
+ \overset{\text{(A)}}{\le}\frac{\varepsilon^2}{2}+\frac{3\varepsilon}{8}
+ \overset{\text{(B)}}{\le}\frac12+\frac38=\frac78,
+ \label{ch5:upper:eq:short-constant-bound}
+\end{equation}
+where (A) uses \eqref{ch5:upper:eq:slack-coefficient} and (B) uses
+$0<\varepsilon\le1$. We obtain
+\begin{align}
+\varepsilon^2\overline Q_T
+ &\overset{\text{(A)}}{\le}\frac{\varepsilon^2}{2}+\frac{\varepsilon^2}{4\sigma}
+ +\frac{\varepsilon^2\sqrt{2K}}{\sigma}\sqrt{\log T}
++\frac{2\varepsilon^2K}{\sigma}\log T\notag\\
+&\overset{\text{(B)}}{\le}\frac78+\sqrt{\frac{128}{9}\,\varepsilon\log T}
+ +\frac{32}{3}\log T\notag\\
+&\overset{\text{(C)}}{\le}\frac78+\sqrt{\frac{128c}{9}}
+ +\frac{32c}{3}+64\ell_\varepsilon.
+\label{ch5:upper:eq:short-horizon-bound}
+\end{align}
+Step (A) uses \eqref{ch5:upper:eq:combination-comparison}. Step (B) uses
+\eqref{ch5:upper:eq:short-constant-bound},
+\eqref{ch5:upper:eq:square-root-grid-coefficient}, and
+\eqref{ch5:upper:eq:linear-grid-coefficient} for the three terms,
+respectively. Step (C) applies both bounds in
+\eqref{ch5:upper:eq:short-log-bounds}.
+
+Now consider the longer horizons, $T\ge T_{\mathrm{cut}}$, and
+use~\eqref{ch5:upper:eq:combination-drift}. We will show that
+its learning term decreases throughout this range. With $z\coloneqq\log T$, set
+\[
+ G(z)\coloneqq\Gamma(e^z)=\frac13+8z+8z^2.
+\]
+The factor $\Gamma(T)^2/T$ then becomes $e^{-z}G(z)^2$.
+For $z>0$,
+\begin{align}
+ 2G(z)-zG'(z)&=\frac23+8z>0,
+ \qquad \frac{G'(z)}{G(z)}\le\frac2z,
+ \label{ch5:upper:eq:G-log-derivative}\\
+ \frac{\mathrm d}{\mathrm dz}\log\!\left(e^{-z}G(z)^2\right)
+ &=-1+2\frac{G'(z)}{G(z)}\le-1+\frac4z.
+ \label{ch5:upper:eq:horizon-monotonicity}
+\end{align}
+Thus $\Gamma(T)^2/T$ is nonincreasing for $T\ge e^4$.
+Since $T_{\mathrm{cut}}\ge e^c>e^4$, substituting
+$T_{\mathrm{cut}}=e^c\varepsilon^{-6}=e^{c+6\ell_\varepsilon}$ and
+$\Gamma(T_{\mathrm{cut}})=G(c+6\ell_\varepsilon)$ gives
+\begin{align}
+ \overline Q_T
+ &\overset{\text{(A)}}{\le}\frac3\varepsilon+\frac{24}{T\varepsilon}
+ +\frac{8192}{81\varepsilon^6}\frac{\Gamma(T)^2}{T}\notag\\
+ &\overset{\text{(B)}}{\le}\frac3\varepsilon+\frac{24}{T_{\mathrm{cut}}\varepsilon}
+ +\frac{8192}{81\varepsilon^6}\frac{\Gamma(T_{\mathrm{cut}})^2}{T_{\mathrm{cut}}}\notag\\
+ &=\frac3\varepsilon+24e^{-c}\varepsilon^5
+ +\frac{8192}{81}e^{-c}G(c+6\ell_\varepsilon)^2.
+ \label{ch5:upper:eq:long-cutoff-bound}
+\end{align}
+Here (A) applies \eqref{ch5:upper:eq:slack-coefficient} and
+\eqref{ch5:upper:eq:drift-grid-coefficient} to
+\eqref{ch5:upper:eq:combination-drift}. Step (B) uses $T\ge T_{\mathrm{cut}}$ for
+$1/T$ and \eqref{ch5:upper:eq:horizon-monotonicity} for the learning term.
+After multiplying the queue bound by $\varepsilon^2=e^{-2\ell_\varepsilon}$,
+the remaining expression involving $G$ is also decreasing in
+$\ell_\varepsilon$. Indeed,
+\begin{equation}
+\begin{aligned}
+ \frac{\mathrm d}{\mathrm d\ell_\varepsilon}
+ \log\!\left(e^{-2\ell_\varepsilon}
+            G(c+6\ell_\varepsilon)^2\right)
+ &=-2+12\frac{G'(c+6\ell_\varepsilon)}{G(c+6\ell_\varepsilon)}\\
+ &\overset{\text{(A)}}{\le}-2+\frac{24}{c+6\ell_\varepsilon}
+ \overset{\text{(B)}}{<}0.
+\end{aligned}
+ \label{ch5:upper:eq:slack-monotonicity}
+\end{equation}
+Step (A) is \eqref{ch5:upper:eq:G-log-derivative} at
+$z=c+6\ell_\varepsilon$. Step (B) uses $c=29/2>12$ and
+$\ell_\varepsilon\ge0$. Multiplying
+\eqref{ch5:upper:eq:long-cutoff-bound} by $\varepsilon^2$
+therefore gives
+\begin{equation}
+\begin{aligned}
+\varepsilon^2\overline Q_T
+ &\le3\varepsilon+24e^{-c}\varepsilon^7
+ +\frac{8192}{81}e^{-c}e^{-2\ell_\varepsilon}
+   G(c+6\ell_\varepsilon)^2\\
+ &\overset{\text{(A)}}{\le}3+e^{-c}
+   \left(24+\frac{8192}{81}G(c)^2\right).
+\end{aligned}
+ \label{ch5:upper:eq:long-horizon-bound}
+\end{equation}
+Step (A) uses $\varepsilon\le1$ for the first two terms and
+\eqref{ch5:upper:eq:slack-monotonicity} to bound the last term by its
+value at $\ell_\varepsilon=0$.
+For the fixed choice $c=29/2$, both numerical coefficients are smaller
+than $170$:
+\begin{align}
+\frac78+\sqrt{\frac{128c}{9}}+\frac{32c}{3}
+ &=\frac78+\frac{8\sqrt{29}}3+\frac{464}3<169.903,
+\label{ch5:upper:eq:short-numerical-constant}\\
+G(c)&=\frac13+8\frac{29}{2}
+               +8\left(\frac{29}{2}\right)^2
+             =\frac{5395}{3},\notag\\
+3+e^{-c}\left(24+\frac{8192}{81}G(c)^2\right)
+ &=3+e^{-29/2}
+   \left(24+\frac{8192}{81}\left(\frac{5395}{3}\right)^2\right)
+<167.959.
+\label{ch5:upper:eq:long-numerical-constant}
+\end{align}
+These are direct evaluations of the constants in
+\eqref{ch5:upper:eq:short-horizon-bound} and
+\eqref{ch5:upper:eq:long-horizon-bound}, with the displayed decimals
+rounded upward.
+\endgroup

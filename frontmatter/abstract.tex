@@ -1,65 +1,42 @@
-This thesis develops first-order optimization and online learning methods
+This thesis develops optimization and online learning methods
 with explicit performance guarantees for nonsmooth convex optimization,
-storage control, and transmission-rate adaptation. The optimization methods
-avoid costly domain projections. The storage methods account for the effect
-of current decisions on future resource availability. Decision
-parameterizations and auxiliary variables expose convex structure and make
-the algorithmic updates tractable. For rate adaptation from binary acknowledgments,
-confidence bounds guide transmission-rate selection and yield bounds on
-time-average expected queue length.
+storage control, and transmission-rate adaptation.
 
-For nonsmooth convex optimization, methods combining linear optimization over
-the original domain with subgradient queries and projections on an auxiliary
-set achieve an $O(T^{-1/2})$ upper bound on the objective gap using at most $T$
-queries to each oracle. For problems with additional convex inequality
-constraints, the thesis applies the algorithm published jointly with Michael
-J. Neely in 2024 to the positive parts of the constraints, with a parameter
-choice and analysis for exact deterministic oracles.
-The constraint-violation norm decreases at the same rate when an optimal Lagrange
-multiplier for the functional constraints exists. The algorithm does not
-require the multiplier or a bound on its norm as input.
+For nonsmooth convex optimization, the methods avoid projections onto the
+original domain by using linear optimization there and projecting onto an
+auxiliary set. Together with subgradient evaluations, these operations achieve
+an $O(T^{-1/2})$ upper bound on the objective gap using at most $T$ calls to
+each oracle. With additional convex inequality constraints, the
+constraint-violation norm decreases at the same rate whenever an optimal
+Lagrange multiplier exists, without requiring the multiplier or a bound on
+its norm as input.
 
-For energy-harvesting allocation across $n\ge2$ subsystems, a controller
-updates total usage and allocation proportions while respecting energy
-availability. For a planned horizon $T$ and sufficient battery capacity of
-order $\sqrt T$, independent of $n$, it achieves
-$O(\sqrt{T(1+\log n)})$ expected cumulative
-regret against the best fixed nonnegative allocation in hindsight whose
-total usage does not exceed the mean energy arrival. Arrivals and total
-per-slot usage lie in $[0,1]$. Costs are convex and revealed after allocation,
-with a fixed componentwise bound on the selected cost subgradients. The
-arrivals are i.i.d., and their next-slot conditional mean, given the full
-past history, equals their common mean.
+For energy allocation across $n\ge2$ subsystems, a controller respecting
+available energy achieves $O(\sqrt{T(1+\log n)})$ expected regret over $T$
+rounds with sufficient battery capacity $O(\sqrt T)$, independent of $n$.
+The benchmark is the best fixed allocation whose total usage does not exceed
+the mean energy arrival. The guarantee holds for convex costs revealed after
+allocation and bounded i.i.d. arrivals, under the chapter's boundedness and
+information assumptions.
 
-For scalar storage control with a known retention coefficient $\alpha\in(0,1)$,
-sufficient capacity to avoid saturation, bounded adversarial arrivals, and
-convex costs, simplex disturbance-action control (SDAC) policies specify
-allocations of past arrivals over time.
-An entropic SDAC controller learns these allocation
-fractions while respecting resource availability. It achieves
-$O(\sqrt{T\log(H+1)})$ regret against fixed SDAC policies with
-memory $H$ and $O(\sqrt{T\log\log T})$ regret against fixed infinite-memory
-SDAC policies. Each comparator is evaluated on its own feasible trajectory
-under the same arrivals and costs. These bounds assume full cost feedback,
-with $L_x,L_u>0$ bounding the state and action components of the selected
-cost subgradients.
-For each memory length $H\ge1$ and all sufficiently large $T$, every causal
-feasible controller has worst-case
-expected regret at least
-$\frac{\alpha}{8}\bigl(L_x/(1-\alpha)+L_u\bigr)\sqrt T$
-against the fixed memory-$H$ SDAC class. For fixed $H,\alpha,L_x,L_u$,
-the $\sqrt T$ dependence on the horizon $T$ is optimal.
+For scalar storage control with known leaky linear dynamics, capacity
+sufficient to avoid saturation, bounded adversarial arrivals, and adversarial
+convex costs, we introduce simplex disturbance-action control (SDAC) policies.
+With full cost feedback, a feasible online controller achieves
+$O(\sqrt{T\log(H+1)})$ and $O(\sqrt{T\log\log T})$ regret against the best
+fixed SDAC policies with memory $H\ge1$ and infinite memory, respectively.
+A worst-case expected-regret lower bound of $\Omega(\sqrt T)$ for every
+causal feasible controller establishes optimal horizon dependence for fixed
+finite memory.
 
-For an initially empty communication queue with independent i.i.d. arrival and
+For a communication queue with independent i.i.d. arrival and
 channel-capacity sequences in $[0,1]$, a transmitter chooses rates from a
 continuous interval and learns their mean offered service from binary
 acknowledgments. Given a known positive lower bound $\varepsilon$ on the
 difference between the best achievable mean offered service and the mean
 arrival rate, UCB1 on a finite rate grid achieves time-average expected queue
 length $O((1+\log(1/\varepsilon))/\varepsilon^2)$, uniformly over all horizons.
-As $\varepsilon\downarrow0$, the converse result from the original joint
-paper on rate adaptation gives a worst-case lower bound of $\Omega(\varepsilon^{-2})$
-for every causal policy in some admissible environment and at some horizon.
-For this UCB1
-controller, a matching $\Omega(\varepsilon^{-2}\log(1/\varepsilon))$ lower
-bound holds at some horizon even with deterministic arrivals and capacities.
+As $\varepsilon\downarrow0$, the original joint paper gives a worst-case
+$\Omega(\varepsilon^{-2})$ lower bound for every causal policy, while a
+matching lower bound for this UCB1 controller shows that its logarithmic
+factor is unavoidable.

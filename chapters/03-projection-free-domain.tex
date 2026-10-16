@@ -25,8 +25,10 @@ convex domain:
 \end{equation}
 On some domains, minimizing a linear function is substantially cheaper
 than computing a Euclidean projection~\cite{COMBETTES2021565,pmlr-v28-jaggi13}.
-For smooth objectives, Frank--Wolfe methods avoid domain projection by
-using linear optimization and a smoothness bound on the linear-model error
+For smooth objectives, Frank--Wolfe methods choose a feasible search point
+by minimizing a linear approximation of the objective over the domain.
+Smoothness bounds the error in this approximation, helping determine how
+far to move toward that point
 \cite{https://doi.org/10.1002/nav.3800030109,pmlr-v28-jaggi13}.
 
 \subsection{Failure of direct subgradient substitution}
@@ -68,9 +70,9 @@ functional inequalities.
 
 \subsection{From smooth conditional gradients to nonsmooth optimization}
 
-To handle nonsmooth objectives, existing methods use richer local models,
-smoothing, or dual formulations. Other methods separate feasible points
-from subgradient query points.
+We compare the methods below by the information they require about the
+objective, where they evaluate subgradients, and the optimization problems
+they solve at each iteration.
 
 White gives an early subgradient extension of Frank--Wolfe to
 concave nondifferentiable maximization~\cite{White1993}.
@@ -133,8 +135,6 @@ The domain-separation method of Asgari and Neely
 oracle-complexity order of MOLES, with a smaller leading constant in the
 published worst-case linear-oracle bound under common Lipschitz and diameter
 bounds~\cite[Appendix~C.2.2]{thekumparampil2020projection}.
-Its convergence proof is more direct, using a telescoping argument without
-smoothing or inner-loop error estimates.
 Section~\ref{sec:pfdom:convex} gives its updates.
 Chapter~\ref{Section:projfree} extends this method to functional
 inequality constraints~\cite{asgari2024nonsmooth}.
@@ -267,9 +267,11 @@ chosen $\Y$. In the guarantee $f(\bar x_T)-f^*\leq2LD/\sqrt T$ of
 Corollary~\ref{cor:ch2-specialization}, $D$ bounds the diameter of $\X$.
 For fixed $\X$ and $T$, enlarging $\Y$ therefore weakens this guarantee
 only if a larger uniform bound $L$ is needed.
-Section~\ref{sec:pfdom:auxiliary-example} gives an example and a
-Lipschitz extension. An extension's existence does not supply an inexpensive
-subgradient oracle: both the bound and oracle access on $\Y$ are required.
+Section~\ref{sec:pfdom:auxiliary-example} illustrates how enlarging the
+auxiliary set can increase the required subgradient bound. It also
+constructs a convex function that agrees with $f$ on $\X$ and has globally
+bounded subgradients. Using this extension still requires an inexpensive
+way to compute its subgradients.
 
 \section{Derivation and algorithm}
 \label{sec:pfdom:convex}
@@ -277,8 +279,9 @@ subgradient oracle: both the bound and oracle access on $\Y$ are required.
 
 The failure in Section~\ref{sec:Nesterov's Counterexample} motivates a
 different linear-oracle direction. Here the oracle uses a multiplier
-that accumulates disagreement between feasible points and auxiliary
-query points.
+$q_t$, updated by adding $\eta(x_{t+1}-y_{t+1})$ at each iteration, where
+$\eta>0$ is a step size. Thus, the multiplier records the accumulated
+differences between the feasible points and the auxiliary query points.
 
 Introducing $y=x$ gives the equivalent problem
 \[
@@ -293,8 +296,11 @@ minimizing $\inner{q}{x}$ over $\X$ and $f(y)-\inner{q}{y}$ over $\Y$.
 Even at an optimal multiplier, these subproblems can have multiple
 minimizers, so independently selected minimizers need not satisfy
 $x=y$~\cite[Section~5.5.5]{boyd_vandenberghe_2004}.
-The multiplier update below gives
-\eqref{eq:pfdom:consensus}.
+With the initialization specified below, the multiplier update gives
+$q_T=\eta T(\bar x_T-\bar y_T)$, where $\bar x_T$ and $\bar y_T$ are the
+averages of the feasible points and auxiliary query points, respectively;
+see~\eqref{eq:pfdom:consensus}. We use this identity to transfer the
+objective bound for the auxiliary points to the feasible output.
 The linear oracle chooses $x_{t+1}$ by minimizing
 $\inner{q_t}{x}$ over $\X$. At iteration $t$, let $s_t$ denote the
 subgradient returned by the oracle at $y_t$, satisfying
@@ -399,6 +405,7 @@ them into~\eqref{eq:ch2-basic-bound} gives
        +\left(\frac{T-1}{T}+1\right)
         \frac{LD}{2\sqrt T}
  \le\frac{2LD}{\sqrt T}.
+ \qedhere
 \]
 \end{proof}
 
@@ -584,8 +591,10 @@ subgradient oracle.
 The method returns a feasible average while querying subgradients
 in the auxiliary set. It is useful when projection
 onto this set and linear optimization over $\X$ are inexpensive.
-The guarantee depends on a uniform subgradient norm bound on the auxiliary
-set.
+The objective-error bound $2LD/\sqrt T$ requires the subgradient norm bound
+$L$ to hold throughout the auxiliary set. Choosing a larger auxiliary set
+can require a larger $L$, increasing the query budget needed to guarantee
+a given accuracy.
 
 Chapter~\ref{Section:projfree} extends this construction to functional
 inequalities. It keeps the ordinary linear oracle for $\X$ and uses

@@ -35,9 +35,10 @@ The linear oracle exploits the structure of $\X$. Linear minimization
 over the intersection $\{x\in\X:h(x)\le0\}$ may be more costly, and no
 inexpensive oracle over this intersection is assumed. The algorithm therefore
 retains linear minimization over $\X$ and handles the functional
-inequalities through multiplier updates, allowing controlled violation.
-Its returned point belongs to $\X$ exactly, with bounds on its objective
-gap and functional-constraint violation.
+inequalities through multiplier updates. The functional constraints need
+not hold at the output point. The output belongs to $\X$, and,
+under Assumption~\ref{assum:Lagrange multiplier}, its constraint violation
+norm has an $O(T^{-1/2})$ upper bound.
 
 \section{Related work}
 \label{sec:ch4-related-work}
@@ -62,9 +63,9 @@ bound used in the analysis.
 
 Lan, Romeijn, and Zhou combine constraint extrapolation with conditional
 gradients in CoexCG and CoexDurCG \cite{lan2021conditional}. Their nonsmooth
-extension constructs smooth approximations from explicit max
-representations of the functions, requiring more information than
-subgradients alone.
+extension requires formulas expressing the functions as maximization
+problems over auxiliary variables. These formulas are used to construct
+smooth approximations; access to subgradients alone is insufficient.
 
 The Level Conditional Gradient method, LCG, solves a sequence of
 subproblems that seek a point satisfying a prescribed set of inequalities,
@@ -104,10 +105,10 @@ do not compare running time.
 
 \section{Contributions and scope}
 
-This chapter proves a joint bound on the objective gap
-and squared constraint violation at the averaged output for the algorithm
-of Asgari and Neely~\cite{asgari2024nonsmooth}, applied to clipped
-constraints with exact deterministic oracles.
+We apply the algorithm of Asgari and Neely~\cite{asgari2024nonsmooth}
+to $c_i(x)=\max\{h_i(x),0\}$, using exact deterministic oracles. Each $c_i$
+is zero when its constraint is satisfied and equals the positive violation
+otherwise.
 The method uses subgradients and constraint values without requiring
 smoothness, a special smoothing
 representation, or proximal operators for the objective and constraint
@@ -119,12 +120,7 @@ Assumption~\ref{assum:Lagrange multiplier}, the constraint violation norm
 also has an $O(T^{-1/2})$ upper bound, as stated in
 \eqref{eq:ch4-cb-violation-theorem}.
 
-The method uses at most $T$ calls to each oracle: $T$ constraint-vector
-evaluations, $T-1$ joint subgradient queries, and $T-1$ linear-oracle calls.
-It also performs $T-1$ projections onto the auxiliary set.
-These counts assume that $x_1\in\X$ is supplied. Obtaining $x_1$ with one
-additional linear-oracle call keeps the linear-oracle count within the
-budget $T$.
+The method uses at most $T$ calls to each oracle.
 The published paper's stochastic and inexact-oracle results,
 application examples, and numerical experiments are outside the scope of
 the present chapter.
@@ -269,9 +265,11 @@ squared norm.
 The method maintains a domain point $x_t\in\X$ and a query point
 $y_t\in\Y$. Linear optimization produces the $x_t$, while
 subgradients and constraint values are evaluated at the $y_t$.
-The equality multiplier $q_t\in\Real^n$ couples the two sequences.
-The inequality multiplier $w_t\in\Real_+^m$ is updated using the
-linearized clipped constraints.
+The vector $q_t\in\Real^n$ accumulates the scaled differences between the
+domain points $x_t$ and query points $y_t$, and enters both point updates.
+The vector $w_t\in\Real_+^m$ helps determine the weight given to each
+constraint in the query-point update. Its update uses affine
+approximations of the clipped constraints evaluated at the new query point.
 
 Let $T\ge1$ be an integer query budget for each oracle. We count a full
 constraint-vector evaluation as one query and a joint evaluation of the
@@ -390,9 +388,12 @@ f(x)+\mu^\top h(x)\ge f^*\qquad(x\in\X).
 \end{equation}
 The multiplier $\mu$ is not an algorithm input.
 \end{Thm:Assumption}
-Assumption~\ref{assum:Lagrange multiplier} supplies the multiplier used in
-the constraint violation bound and the objective lower bound in
-\eqref{eq:ch4-cb-violation-theorem}. A sufficient condition is the existence of
+This assumption limits how far an infeasible output's objective value can
+fall below the feasible optimum: $\Delta_T\ge-\|\mu\|V_T$. Combining this
+lower bound with the first inequality in \eqref{eq:ch4-cb-theorem} gives
+the separate upper bound on constraint violation in
+\eqref{eq:ch4-cb-violation-theorem}. A sufficient condition for
+Assumption~\ref{assum:Lagrange multiplier} is the existence of
 $x^\circ\in\operatorname{relint}\X$ with $h_i(x^\circ)<0$ for every
 $i=1,\ldots,m$ \cite{boyd_vandenberghe_2004}.
 
@@ -412,7 +413,42 @@ V_T\le\frac{4GD}{\sqrt T}\left(1+\frac{G\|\mu\|}{L}\right),
 \end{equation}
 \end{Thm:Theorem}
 
-\subsection{Proof and oracle complexity}
+\begin{Thm:Corollary}[Oracle complexity]\label{cor:ch4-cb-iteration-complexity}
+Under Assumptions~\ref{ass:ch2-oracles} and~\ref{assum:Lagrange multiplier},
+Algorithm~\ref{alg:functional} with \eqref{eq:ch4-cb-tuning} satisfies
+$\Delta_T\le\epsilon$ and $V_T\le\epsilon$ for any $\epsilon>0$
+whenever its integer query budget obeys
+\begin{equation}\label{eq:ch4-cb-sufficient-iteration-count}
+T\ge\max\left\{1,
+\left\lceil\frac{9L^2D^2}{\epsilon^2}\right\rceil,
+\left\lceil\frac{16G^2D^2}{\epsilon^2}
+\left(1+\frac{G\|\mu\|}{L}\right)^2\right\rceil\right\}.
+\end{equation}
+\end{Thm:Corollary}
+\begin{proof}
+The budget in \eqref{eq:ch4-cb-sufficient-iteration-count} gives
+$\sqrt T\ge3LD/\epsilon$ and
+$\sqrt T\ge(4GD/\epsilon)(1+G\|\mu\|/L)$.
+Substituting these inequalities into
+Theorem~\ref{thm:ch4-cb-guarantee} proves both claims.
+\end{proof}
+
+The method uses at most $T$ calls to each oracle: $T$ constraint-vector
+evaluations, $T-1$ joint subgradient queries, and $T-1$ linear-oracle calls.
+It also performs $T-1$ projections onto the auxiliary set.
+These counts assume that $x_1\in\X$ is supplied. Obtaining $x_1$ with one
+additional linear-oracle call keeps the linear-oracle count within the
+budget $T$.
+
+Computing the bound in
+\eqref{eq:ch4-cb-violation-theorem} requires a known constant
+$M\ge\|\mu\|$ for a multiplier $\mu$ satisfying
+\eqref{eq:ch4-cb-multiplier}. The returned point's violation can also be
+checked by evaluating $h(\bar x_T)$. Unless its value is already
+available, this check requires one additional constraint-vector
+evaluation beyond the stated optimization budget.
+
+\subsection{Proof of the main guarantee}
 \label{sec:ch4-cb-proof}
 
 \begin{proof}[Proof of Theorem~\ref{thm:ch4-cb-guarantee}]
@@ -455,7 +491,9 @@ By \eqref{eq:ch4-cb-affine-model} and \eqref{eq:ch4-cb-multiplier-updates},
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-Here (A) uses \eqref{eq:intro:positive-part-norm}. Step (B) uses
+For (A), each coordinate satisfies $[v_i]_+^2\le v_i^2$, so summing gives
+$\|[v]_+\|^2\le\|v\|^2$; apply this with
+$v=w_t+\widehat c_t(y_{t+1})$. Step (B) uses
 \eqref{eq:ch4-cb-jacobian-bound}.
 
 The projection condition \eqref{eq:intro:projection-optimality} gives
@@ -743,26 +781,6 @@ bound in \eqref{eq:ch4-cb-theorem}, this proves
 \eqref{eq:ch4-cb-violation-theorem}.
 \end{proof}
 
-\begin{Thm:Corollary}[Oracle complexity]\label{cor:ch4-cb-iteration-complexity}
-Under Assumptions~\ref{ass:ch2-oracles} and~\ref{assum:Lagrange multiplier},
-Algorithm~\ref{alg:functional} with \eqref{eq:ch4-cb-tuning} satisfies
-$\Delta_T\le\epsilon$ and $V_T\le\epsilon$ for any $\epsilon>0$
-whenever its integer query budget obeys
-\begin{equation}\label{eq:ch4-cb-sufficient-iteration-count}
-T\ge\max\left\{1,
-\left\lceil\frac{9L^2D^2}{\epsilon^2}\right\rceil,
-\left\lceil\frac{16G^2D^2}{\epsilon^2}
-\left(1+\frac{G\|\mu\|}{L}\right)^2\right\rceil\right\}.
-\end{equation}
-\end{Thm:Corollary}
-\begin{proof}
-The budget in \eqref{eq:ch4-cb-sufficient-iteration-count} gives
-$\sqrt T\ge3LD/\epsilon$ and
-$\sqrt T\ge(4GD/\epsilon)(1+G\|\mu\|/L)$.
-Substituting these inequalities into
-Theorem~\ref{thm:ch4-cb-guarantee} proves both claims.
-\end{proof}
-
 \section{Conclusion}
 
 Using linear optimization over $\X$ and projection onto the auxiliary
@@ -771,10 +789,5 @@ $3LD/\sqrt T$ by~\eqref{eq:ch4-cb-theorem}. This bound is computable from
 the known constants.
 
 Under Assumption~\ref{assum:Lagrange multiplier}, the constraint violation
-norm also has an $O(T^{-1/2})$ upper bound. Computing the bound in
-\eqref{eq:ch4-cb-violation-theorem} requires a known constant
-$M\ge\|\mu\|$ for a multiplier $\mu$ satisfying
-\eqref{eq:ch4-cb-multiplier}. The returned point's violation can also be
-checked by evaluating $h(\bar x_T)$. Unless its value is already
-available, this check requires one additional constraint-vector
-evaluation beyond the stated optimization budget.
+norm also has an $O(T^{-1/2})$ upper bound, whose constant depends on
+the norm of a Lagrange multiplier.

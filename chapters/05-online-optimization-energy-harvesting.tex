@@ -36,20 +36,10 @@ a cost $c_t(\mathbf{X}_t)$. The function $c_t$ is convex, but it is unknown when
 chosen and is revealed only after the decision.
 
 The costs need not follow a probabilistic model. Energy arrivals are random,
-and their distribution is unknown. Writing $B_t$ for the energy stored
-at the start of slot $t$ and $A_t$ for the new arrival, the allocation must
-satisfy
-\begin{equation}\label{eq:battery-constraint}
-    \sum_{i=1}^n X_{t,i}\leq B_t+A_t.
-\end{equation}
-Unused energy is stored up to the capacity $B_{\mathrm{max}}$, so
-\begin{equation}\label{eq:B-update}
-    B_{t+1}=\min\left\{B_t+A_t-\sum_{i=1}^n X_{t,i},
-                    B_{\mathrm{max}}\right\},
-    \qquad t\in[T].
-\end{equation}
-Here $B_1$ is the initial energy. Constraint \eqref{eq:battery-constraint}
-ensures that the battery update remains nonnegative.
+and their distribution is unknown. The allocation cannot exceed the stored
+energy plus the current arrival. Unused energy is stored up to the battery
+capacity. Section~\ref{sec:energy:problem} gives the precise constraints
+and battery dynamics.
 
 Choosing $\mathbf{X}_t$ before observing $c_t$ is the standard setting of
 online convex optimization (OCO)
@@ -61,15 +51,9 @@ arrivals to be lost.
 
 We measure performance using cumulative regret: the controller's total cost
 minus the cost of the best nonnegative allocation $\mathbf{X}^*$ held fixed
-across slots and chosen with knowledge of the full cost sequence. In addition
-to the per-slot total-usage limit in Section~\ref{sec:energy:problem}, this
-comparator must satisfy
-\[
-    \sum_{i=1}^nX_i^*\leq\overline{A},
-    \qquad \overline{A}\coloneqq\expect{A_t}.
-\]
-This comparator need not satisfy the battery constraint on
-every slot.
+across slots and chosen with knowledge of the full cost sequence. Its total
+usage is limited by the mean energy arrival and the per-slot usage limit,
+but it need not satisfy the battery constraint on every slot.
 
 The method in \cite{Yu2019} achieves an $O(\sqrt{T})$ regret bound with an
 $O(\sqrt{T})$ battery capacity. Its regret bound contains a factor of
@@ -78,12 +62,11 @@ $n\geq2$. For this comparison,
 we keep the bound on each component of the cost subgradients fixed as
 $n$ varies.
 
-The available energy changes with arrivals and past spending, so a
-simplex update alone cannot enforce the total energy budget. We separate
-total usage from allocation proportions: the usage update enforces the
-battery constraint, and entropic mirror descent updates the proportions
-on a fixed probability simplex. The latter gives the dimension dependence
-stated above.
+The allocation proportions specify how energy is divided among subsystems,
+but they do not determine how much energy can be spent. We therefore update
+total usage separately, subject to the energy currently available.
+Entropic mirror descent updates the proportions on a fixed probability
+simplex and gives the $O(\sqrt{\log n})$ factor in the regret bound.
 
 \subsection{Wireless transmission example}\label{System example}
 
@@ -130,13 +113,13 @@ the slotwise battery constraint and state recursion studied here.
 Bregman methods also appear in constrained OCO \cite{wei2020online}, although that model
 does not include the physical storage dynamics studied here.
 
-In more general online learning models with arbitrarily varying rewards
-and sample-path average constraints, the best feasible performance in
-hindsight need not be attainable \cite{mannor2009online}.
-Here, the conditional-mean condition in
-\eqref{eq:energy:conditional-mean} provides a predictable expected energy
-supply given the past, while the costs need not follow a probabilistic
-model.
+For some online learning problems with average constraints, no online policy
+can guarantee the long-run average reward of the feasible benchmark that
+knows future outcomes \cite{mannor2009online}.
+Here, we assume that observing the past does not change the expected next
+energy arrival: its conditional mean remains $\overline A$, as specified
+in~\eqref{eq:energy:conditional-mean}. The controller need not know this mean,
+and the costs need not follow a probabilistic model.
 
 The closest work, \cite{Yu2019}, combines online learning with finite
 energy storage. Its regret and capacity bounds are compared above.
@@ -191,8 +174,14 @@ new arrival $A_t$, then selects an allocation $\mathbf{X}_t$ satisfying
 \end{align}
 After the allocation is chosen, the cost function
 $c_t:\mathcal X\to\Real$ is revealed. This function is continuous and convex.
-The controller incurs cost $c_t(\mathbf{X}_t)$. The battery is then updated
-according to \eqref{eq:B-update}.
+The controller incurs cost $c_t(\mathbf{X}_t)$. Unused energy is stored up
+to the battery capacity, so the battery is then updated by
+\begin{equation}\label{eq:B-update}
+    B_{t+1}=\min\left\{B_t+A_t-\sum_{i=1}^n X_{t,i},
+                    B_{\mathrm{max}}\right\},
+    \qquad t\in[T].
+\end{equation}
+Constraint \eqref{eq:X-constraint1} ensures that this update remains nonnegative.
 The algorithm uses a subgradient of $c_t$ at $\mathbf{X}_t$.
 
 \subsection{Assumptions}\label{Assumptions}
@@ -281,8 +270,10 @@ $T\geq1$. Algorithm~\ref{Alg1}, initialized as specified below and using
  \E[\Reg_T(\mathcal A)]
  \leq G\sqrt T\left[6+\sqrt{2\log n}\right].
 \]
-The capacity choice makes the relaxed usage update feasible on every slot
-by Theorem~\ref{Theorem of battery}. The regret bound follows from
+With this battery capacity, the usage update never requests more energy
+than is available, even when it is restricted only to $[0,1]$ without
+explicitly enforcing the available-energy limit.
+Theorem~\ref{Theorem of battery} proves this claim. The regret bound follows from
 Theorem~\ref{Main Theorem} and \eqref{eq:ch3-explicit-sqrt-bound}.
 For fixed $G$, it is $O(\sqrt{T(1+\log n)})$, and the sufficient capacity
 is independent of $n$.
@@ -347,12 +338,12 @@ $U_t\mathbf g_t$.
 
 \subsection{Two Bregman divergences}
 
-We use separate Bregman proximity terms for changes in total usage and allocation
-proportions. For usage, use the quadratic term $(u-v)^2/2$ from the
-scalar case of \eqref{eq:intro:quadratic-geometry}.
-For proportions, use the Kullback--Leibler (KL) divergence, obtained by
-restricting the generalized KL divergence in~\eqref{eq:intro:generalized-kl}
-to the probability simplex:
+Each update penalizes changes from the previous decision. We measure
+changes in total usage by the squared difference $(u-v)^2/2$, from the
+scalar case of~\eqref{eq:intro:quadratic-geometry}, and changes in allocation
+proportions by the Kullback--Leibler (KL) divergence. The latter is obtained
+by restricting the generalized KL divergence
+in~\eqref{eq:intro:generalized-kl} to the probability simplex:
 \begin{equation}\label{eq:energy:entropy-divergence}
 D_\Psi(\mathbf p,\mathbf q)=\sum_{i=1}^n p_i\log\frac{p_i}{q_i},
 \qquad \mathbf p,\mathbf q\in\Delta_n,\quad q_i>0.
@@ -484,10 +475,13 @@ subgradient. The algorithm needs $O(n)$ memory.
 \section{Feasibility of the relaxed usage update}
 \label{sec:energy:feasibility}
 
-Using the fixed interval $[0,1]$ allows comparison with a fixed usage that
-may exceed the available energy on individual slots. We show that
-sufficient battery capacity makes the relaxed algorithm feasible, so its
-regret bound also applies to Algorithm~\ref{Alg1}.
+For the analysis, we allow the usage update to choose any value in $[0,1]$
+without explicitly limiting it to the energy currently available. This
+lets us compare the update with a fixed usage that may exceed the available
+energy on some slots. We show that, with sufficient battery capacity, the
+battery-price penalty keeps every usage decision within the available
+energy. The relaxed update then makes the same decisions as
+Algorithm~\ref{Alg1}, so its regret bound applies to that algorithm.
 
 Fix $\eta,\gamma,\lambda>0$ and any sequence satisfying
 \eqref{eq:energy:arrival-bound} and \eqref{eq:G}.
@@ -624,8 +618,14 @@ gives identical iterates.
 
 \subsection{Minimizing the sufficient battery-capacity bound}
 
-The following calculation corrects the capacity tuning in
-\cite[Section~4.2]{10.1145/3428337}, under the unit bounds used here.
+For fixed usage step size $\eta$ and price scale $\gamma$, we choose the
+analysis parameter $r\geq0$ to minimize the sufficient battery-capacity
+bound~\eqref{eq:Bmax-a}. Energy arrivals and per-slot usage are both
+restricted to $[0,1]$. The final capacity formula in
+\cite[Section~4.2]{10.1145/3428337} omits a factor of two in its square-root
+term. Under these bounds and in this chapter's notation, that term is
+$2/\sqrt{\eta\gamma}$ when $0<\eta\gamma\leq1$. The calculation below
+also covers the boundary minimum at $r=0$ when $\eta\gamma>1$.
 
 For $0<\eta\gamma\leq1$, \eqref{eq:Bmax-a} gives
 \begin{equation}\label{eq:energy:capacity-square}
@@ -969,6 +969,7 @@ nonnegative allocation that uses no more than the mean energy arrival per
 slot. This allocation may require more energy than is available on some
 slots. Chapter~\ref{Section:ChapControl} studies
 policies that assign fractions of each arrival for use in later slots.
-Each comparison policy respects its own energy availability. Its cost
-is evaluated using the battery levels and allocations produced by its
-decisions.
+Each comparison policy receives the same energy arrivals as the controller,
+but its battery levels depend on its own past allocations. It must satisfy
+the available-energy constraint on every slot, and its cost is evaluated
+using those allocations and battery levels.

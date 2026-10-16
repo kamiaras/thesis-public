@@ -26,25 +26,36 @@ own storage trajectory. Its actions may vary with the arrival history.
 The scalar model has storage decay and enough capacity to avoid saturation.
 A \emph{Simplex Disturbance-Action Control} (SDAC) policy assigns
 nonnegative fractions of each arrival to withdrawal delays, with total
-fraction at most one. Lemmas~\ref{ch4:lem:sdac-state-decomp}--\ref{ch4:lem:sdac-surrogate}
-establish affine fixed-policy trajectories, feasibility, and convexity of
-the resulting costs in the policy parameters.
+fraction at most one. For a fixed SDAC policy, the storage level and allocation
+are affine functions of its allocation fractions.
+Lemmas~\ref{ch4:lem:sdac-state-decomp}--\ref{ch4:lem:sdac-surrogate} show that
+the policy never withdraws more resource than is available and
+that its cost is convex in these policy parameters.
 
 The \emph{entropic SDAC controller} uses entropic mirror descent and clips
-requested allocations to the resource currently available. Its regret
-bound combines surrogate regret with a tracking bound for the executed
-trajectory. After each action, the controller uses the revealed full cost
-function to obtain a subgradient at the current fixed-policy state and
-action.
+requested allocations to the resource currently available. At each round,
+the surrogate cost is evaluated at the state and action that would result
+if the current allocation fractions had been used from the start with the
+same arrival history. We bound regret using these hypothetical costs, then
+bound their difference from the costs actually incurred as the fractions
+change and allocations are clipped.
+After each action, the controller uses the revealed full cost function to
+obtain a subgradient at this hypothetical state and action.
 
 \subsection{Contributions and scope}
 
-The entropic SDAC controller is feasible on every round. For fixed retention
-coefficient and cost bounds, parameters chosen for a horizon of $T$ rounds give
-$O(\sqrt{T\log(H+1)})$ regret against policies with memory $H$. Truncating
-infinite-memory policies gives $O(\sqrt{T\log\log T})$ regret against the
-best fixed infinite-memory SDAC policy. This class includes every feasible
-scalar fixed-fraction policy under the stated dynamics.
+The entropic SDAC controller is feasible on every round. For a chosen memory
+length $H$, setting the learning step size according to the horizon $T$ gives
+$O(\sqrt{T\log(H+1)})$ regret against policies with memory $H$, with the
+retention coefficient and cost bounds held fixed. We approximate
+each infinite-memory policy by discarding its withdrawal weights for delays
+greater than $H$. Storage decay gives a bound on the resulting cost difference
+that decreases geometrically with $H$. Choosing $H$ proportional to $\log T$
+as specified in~\eqref{ch4:eq:def-infinite-memory-length} gives
+$O(\sqrt{T\log\log T})$ regret against the best fixed infinite-memory SDAC
+policy. This class includes policies that withdraw a constant fraction of
+the currently stored resource each round: $u_t=kx_t$, where $0\le k\le\alpha$.
+Each such policy can be represented as an infinite-memory SDAC policy.
 
 For $G_\alpha\coloneqq\alpha(L_x/(1-\alpha)+L_u)$ and horizons satisfying
 \eqref{ch4:eq:sdac-lower-horizon},
@@ -224,7 +235,7 @@ distribution of stored water \cite{moran1956continuous}.
 
 We follow the shared conventions in Section~\ref{sec:intro:notation}.
 
-\subsection{Model and regret benchmark}
+\subsection{Model}
 \label{ch4:sec:model-setup}
 
 Fix a positive integer $T$ and a known retention coefficient
@@ -284,10 +295,11 @@ state--action pair in the compact set
 \label{ch4:rem:storage-capacity}
 A physical storage capacity $B\ge1/(1-\alpha)$ suffices to avoid overflow
 on every feasible trajectory starting at zero. Thus the same results hold for
-$x_{t+1}=\min\{B,\alpha x_t-u_t+w_t\}$ at these capacities. For smaller
-capacities, overflow introduces a minimum operation into the storage dynamics.
-Fixed-policy trajectories may then cease to be affine in the policy parameters,
-so the analysis below does not directly apply.
+$x_{t+1}=\min\{B,\alpha x_t-u_t+w_t\}$ at these capacities. With smaller
+storage capacities, overflow can make the storage level a nonaffine function
+of the policy fractions. A convex cost in storage and allocation then need
+not remain convex in those fractions. The learning analysis below relies on
+that convexity.
 \end{Thm:Remark}
 
 Each revealed cost function $c_t:\Real_+^2\to\mathbb{R}$ is convex in
@@ -330,34 +342,10 @@ J_T^{\mathrm{on}}
 \end{equation}
 
 
-Unless stated otherwise, SDAC policies have finite memory, with parameter
-domain $\mathcal M_H$ defined in Subsection~\ref{ch4:sec:sdac}.
-The \emph{fixed-policy trajectory}
-$\{(x_t(\mathbf m),u_t(\mathbf m))\}_{t=1}^T$ is the unique trajectory
-obtained by using $\mathbf m$ at every time.
-Its cumulative cost is
-\begin{equation}
-\label{ch4:eq:def-fixed-policy-cost}
-J_T(\mathbf{m})
-\coloneqq
-\sum_{t=1}^T c_t\bigl(x_t(\mathbf{m}),u_t(\mathbf{m})\bigr).
-\end{equation}
-For a fixed positive integer $H$, the regret against the best fixed
-SDAC policy is
-\begin{equation}
-\label{ch4:eq:def-regret}
-\Reg_T(\mathcal M_H)
-\coloneqq
-J_T^{\mathrm{on}}
--\min_{\mathbf{m}\in\mathcal{M}_H}J_T(\mathbf{m}).
-\end{equation}
-The comparison uses the same realized arrival and cost sequence for the
-online controller and all fixed policies.
-
 Our objective is to satisfy \eqref{ch4:eq:model-feasibility} at every time and achieve
-sublinear regret.
+sublinear regret against the fixed policies defined next.
 
-\subsection{Finite-memory SDAC policies}
+\subsection{Finite-memory SDAC policies and regret benchmark}
 \label{ch4:sec:sdac}
 
 DAC uses a finite linear filter of past disturbances
@@ -406,6 +394,30 @@ where
 \in\mathbb{R}^H.
 \end{equation}
 Here, $m_i\alpha^i w_s$ is the amount from arrival $w_s$ used $i$ periods later.
+
+Unless stated otherwise, SDAC policies have finite memory, with parameter
+domain $\mathcal M_H$.
+The \emph{fixed-policy trajectory}
+$\{(x_t(\mathbf m),u_t(\mathbf m))\}_{t=1}^T$ is the unique trajectory
+obtained by using $\mathbf m$ at every time.
+Its cumulative cost is
+\begin{equation}
+\label{ch4:eq:def-fixed-policy-cost}
+J_T(\mathbf{m})
+\coloneqq
+\sum_{t=1}^T c_t\bigl(x_t(\mathbf{m}),u_t(\mathbf{m})\bigr).
+\end{equation}
+For a fixed positive integer $H$, the regret against the best fixed
+SDAC policy is
+\begin{equation}
+\label{ch4:eq:def-regret}
+\Reg_T(\mathcal M_H)
+\coloneqq
+J_T^{\mathrm{on}}
+-\min_{\mathbf{m}\in\mathcal{M}_H}J_T(\mathbf{m}).
+\end{equation}
+The comparison uses the same realized arrival and cost sequence for the
+online controller and all fixed policies.
 
 \begin{Thm:Lemma}[State decomposition under SDAC]
 \label{ch4:lem:sdac-state-decomp}
@@ -681,9 +693,11 @@ whenever $x_t\ge0$,
 \]
 Since $x_1=0$, the online trajectory is feasible. The learning update uses
 the surrogate subgradient at $\mathbf m_t$. Clipping only changes the
-executed action. Lemma~\ref{ch4:lem:availability-projection}
-shows that the same action results from projecting the policy parameters
-onto the set compatible with the current storage level.
+executed action. Lemma~\ref{ch4:lem:availability-projection} gives another way
+to obtain the clipped allocation: among admissible SDAC fractions whose
+requested allocation does not exceed $\alpha x_t$, choose those minimizing
+the generalized KL divergence from the current fractions. The resulting
+allocation equals the clipped request.
 \paragraph{Surrogate cost and OMD update}
 After $w_t$ and $c_t$ are revealed, the controller evaluates the surrogate
 subgradient $\mathbf g_t=\zeta_t^x\boldsymbol\phi_t^x+\zeta_t^u\boldsymbol\phi_t^u$
@@ -739,7 +753,11 @@ For every $\mathbf m\in\mathcal M_H$, the fixed-policy cost
  &\quad+\sum_{t=1}^T\bigl[\ell_t(\mathbf m_t)-\ell_t(\mathbf m)\bigr].
 \end{aligned}
 \end{equation}
-The first sum is the tracking difference. The second is surrogate regret.
+The first sum, called the tracking difference, compares the controller's
+actual cost with the cost it would incur at each round if its current
+allocation fractions had been used from the start with the same arrival
+history. The second sum, called surrogate regret, compares these hypothetical
+costs with those of the fixed policy $\mathbf m$.
 Bounding these terms gives the following guarantee.
 
 \begin{Thm:Theorem}[Regret against fixed SDAC policies]
@@ -777,8 +795,10 @@ $\eta^*\coloneqq\sqrt{\log(H+1)/(T\Gamma_\alpha)}$. Then
 \end{equation}
 \end{Thm:Theorem}
 
-The proof combines surrogate regret with the loss caused by policy changes,
-as in the analysis of online learning with memory in
+The proof first bounds regret for the surrogate costs, then bounds the
+difference between actual and surrogate costs caused by changing the policy
+fractions and clipping allocations. This follows the analysis of online
+learning with memory in
 \cite[App.~C, proof of Thm.~3.1]{kumar2023unbounded}.
 
 \begin{proof}[Proof of Theorem~\ref{ch4:thm:regret-bound}]
@@ -839,7 +859,10 @@ x_{t+1}=[\alpha x_t-v_t]_++w_t,
 \qquad
 x_{t+1}(\mathbf m_t)=[\alpha x_t(\mathbf m_t)-v_t]_++w_t.
 \]
-By \eqref{eq:intro:positive-part-nonexpansive},
+For real $a,b$, $|[a]_+-[b]_+|\le|a-b|$: if both are nonnegative,
+the two sides are equal; if both are nonpositive, the left side is zero;
+and if they have opposite signs, the left side is the positive argument,
+which is at most $|a|+|b|=|a-b|$. Applying this bound gives
 \[
 \begin{aligned}
 |x_{t+1}-x_{t+1}(\mathbf m_t)|
@@ -1129,9 +1152,11 @@ we have
 \Reg_T(\mathcal M_\infty)
 \le2\sqrt{\Gamma_\alpha T\log(H_T+1)}+TG_\alpha\alpha^{H_T}.
 \end{equation}
-For fixed $\alpha,L_x,L_u$, the regret is
-$O(\sqrt{T\log\log T})=o(T)$. The same bound holds against the best
-fixed-fraction policy:
+For fixed $\alpha,L_x,L_u$, cumulative regret is bounded above by
+$O(\sqrt{T\log\log T})$. Consequently, the upper bound on average excess cost
+per round tends to zero. This guarantee also applies to the best
+fixed-fraction policy chosen in hindsight, because every such policy belongs
+to the comparison class $\mathcal M_\infty$:
 \[
 J_T^{\mathrm{on}}
 -\min_{k\in[0,\alpha]}\sum_{t=1}^Tc_t(x_t(k),u_t(k))
@@ -1212,8 +1237,10 @@ J_T^{\mathrm{on}}-\min_{k\in[0,\alpha]}
 \section{Regret lower bound}
 \label{ch4:sec:regret-lower-bound}
 
-We now show that the entropic SDAC controller's $\sqrt T$ regret dependence
-is optimal for fixed $H,\alpha,L_x,L_u$.
+We now show that, with $H,\alpha,L_x,L_u$ fixed, no causal feasible controller
+can guarantee worst-case expected regret growing more slowly than $\sqrt T$.
+Thus the entropic SDAC controller's upper bound has the best possible
+dependence on the horizon, up to a constant factor.
 
 \begin{Thm:Theorem}[SDAC regret lower bound]
 \label{ch4:thm:sdac-lower-bound}
@@ -1406,20 +1433,26 @@ $O(\sqrt{T\log\log T})$ regret against infinite-memory SDAC policies
 for fixed $\alpha,L_x,L_u$, including every feasible scalar fixed-fraction
 policy.
 
-Theorem~\ref{ch4:thm:sdac-lower-bound} shows that the $\sqrt T$
-horizon dependence is optimal for fixed $H,\alpha$ and $L_x,L_u>0$.
-The factors of $\sqrt{\log(H+1)}$ in memory dependence and
-$(1-\alpha)^{-1/2}$ in retention dependence as $\alpha\uparrow1$ remain
-unresolved, with the latter comparison subject to
-\eqref{ch4:eq:sdac-lower-horizon}.
+Theorem~\ref{ch4:thm:sdac-lower-bound} shows that, with $H,\alpha$ and
+$L_x,L_u>0$ fixed, no causal feasible controller can guarantee worst-case
+expected regret growing more slowly than $\sqrt T$. The upper bound therefore
+has the best possible dependence on the horizon, up to a constant factor.
+It contains a factor $\sqrt{\log(H+1)}$ that is absent from the lower bound.
+As $\alpha$ approaches one, the bounds also differ by a factor
+$(1-\alpha)^{-1/2}$, subject to the horizon condition
+\eqref{ch4:eq:sdac-lower-horizon}. We do not yet know whether these additional
+factors in the upper bound are necessary.
 
 The upper bounds require revelation of the full cost function and enough
 capacity to avoid saturation, as specified in
 Subsection~\ref{ch4:sec:model-setup}.
-Feedback only at the executed state--action pair need not determine the
-surrogate subgradient, and active saturation can destroy the affine
-fixed-policy trajectories used to establish convexity in
-Lemma~\ref{ch4:lem:sdac-surrogate}.
+The learning update requires a cost subgradient at the state and action that
+would result from using the current policy fractions from the start. These
+can differ from the actual storage level and allocation. Feedback only at
+the actual state and action may therefore be insufficient to compute the
+update. If storage capacity causes overflow, the storage level may cease to
+be affine in the policy fractions, so the convexity argument in
+Lemma~\ref{ch4:lem:sdac-surrogate} no longer applies.
 
 \section{Action clipping as a projection}
 \label{ch4:subsec:scalar-entropy}
