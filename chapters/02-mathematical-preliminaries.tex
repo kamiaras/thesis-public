@@ -2,8 +2,8 @@
 \label{Section:Preliminaries}
 
 This chapter collects the tools used across the optimization and control
-analyses. It was generated primarily using AI and presents standard material
-for which we make no claim of novelty.
+analyses. It presents standard material for which we make no claim of novelty.
+This chapter was generated primarily using AI.
 
 \section{Notation and online comparisons}\label{sec:prelim:notation}
 
@@ -23,7 +23,7 @@ $O(\sqrt T)$ regret.
 
 In the storage-control chapter, $z$ specifies a fixed policy. To define
 $\ell_t(z)$, we apply that policy from the first round using the same
-arrivals and cost functions as the online controller; $\ell_t(z)$ is the
+arrivals and cost functions as the online controller. Here, $\ell_t(z)$ is the
 resulting cost in round $t$. The online controller changes its policy
 over time, so its current state also reflects earlier policies. Its
 actual cost can therefore differ from $\ell_t(z_t)$. 
@@ -35,7 +35,7 @@ For a norm $\norm{\cdot}$, its dual is
 \end{equation}
 In particular, $\ell_1$ and $\ell_\infty$ are dual, and $\ell_2$ is self-dual.
 
-\begin{Thm:Lemma}[H\"older and Young inequalities {\cite[Example~5.11]{orabona_modern_2023}}]\label{lem:holder}
+\begin{Thm:Lemma}[H\"older and Young inequalities; cf.~{\cite[Example~5.11]{orabona_modern_2023}}]\label{lem:holder}
 For any dual pair of norms and any $\gamma>0$,
 \begin{equation}\label{eq:intro:holder-young}
  |\inner{g}{v}|\le\norm{g}_*\norm{v},\qquad
@@ -51,7 +51,7 @@ Young's inequality also gives
 \end{Thm:Lemma}
 \begin{proof}
 For $v\ne0$, apply~\eqref{eq:intro:dual-norm} to both
-$v/\norm{v}$ and $-v/\norm{v}$; the case $v=0$ is immediate.
+$v/\norm{v}$ and $-v/\norm{v}$. The case $v=0$ is immediate.
 With $r\coloneqq\norm{v}$, this gives
 \begin{align*}
  \inner{g}{v}-\frac\gamma2\norm{v}^2
@@ -60,8 +60,6 @@ With $r\coloneqq\norm{v}$, this gives
    +\frac{\norm{g}_*^2}{2\gamma}
  \le \frac{\norm{g}_*^2}{2\gamma}.
 \end{align*}
-Here we complete the square, then use $\gamma>0$ to discard its
-nonpositive contribution.
 For~\eqref{eq:intro:young-conjugate}, the case $b=0$ is immediate.
 If $b>0$, the derivative of $br-r^p/p$ is $b-r^{p-1}$, so its
 maximum over $r\ge0$ occurs at $r=b^{1/(p-1)}$. Since $q=p/(p-1)$,
@@ -69,6 +67,7 @@ maximum over $r\ge0$ occurs at $r=b^{1/(p-1)}$. Since $q=p/(p-1)$,
  ab-\frac{a^p}{p}
  \le\max_{r\ge0}\left\{br-\frac{r^p}{p}\right\}
  =b^q-\frac{b^q}{p}=\frac{b^q}{q}.
+ \qedhere
 \]
 \end{proof}
 
@@ -85,8 +84,7 @@ A subgradient $g\in\partial f(x)$ satisfies
 \begin{equation}\label{eq:intro:subgradient}
  f(y)\ge f(x)+\inner{g}{y-x},\qquad y\in Q.
 \end{equation}
-At a differentiable
-point we use $\nabla f(x)$.
+When $f$ is differentiable at $x$, we use $\nabla f(x)$ as a subgradient.
 
 \begin{Thm:Lemma}[Convex comparison and affine composition {\cite{boyd_vandenberghe_2004,orabona_modern_2023}}]
 \label{lem:intro:convex-comparison}
@@ -115,8 +113,8 @@ For $z,z'\in P$ and $0\le\lambda\le1$,
  =f\bigl(\lambda F(z)+(1-\lambda)F(z')\bigr)
  \overset{\mathrm{(A)}}{\le}\lambda\ell(z)+(1-\lambda)\ell(z'),
 \]
-where (A) is~\eqref{eq:intro:convexity} with
-$(x,y,\theta)=(F(z),F(z'),\lambda)$; both images lie in $Q$.
+where (A) follows from~\eqref{eq:intro:convexity}, since
+$F(z),F(z')\in Q$.
 For every $z'\in P$,
 \[
  \ell(z')-\ell(z)
@@ -124,9 +122,8 @@ For every $z'\in P$,
  \overset{\mathrm{(A)}}{\ge}\inner{g}{F(z')-F(z)}
  =\inner{A^\top g}{z'-z}.
 \]
-Here (A) is~\eqref{eq:intro:subgradient} at $F(z)$ with comparison point
-$F(z')$. The last equality uses $F(z')-F(z)=A(z'-z)$, so
-\eqref{eq:intro:subgradient} for $\ell$ gives~\eqref{eq:intro:affine-subgradient}.
+Here (A) follows from~\eqref{eq:intro:subgradient},
+proving~\eqref{eq:intro:affine-subgradient}.
 \end{proof}
 
 \begin{Thm:Lemma}[Jensen's inequality for fractional powers]
@@ -137,7 +134,7 @@ For a nonnegative random variable $Z$ with $\E[Z]<\infty$ and $0<\theta<1$,
 \end{equation}
 \end{Thm:Lemma}
 \begin{proof}
-The bound $0\le Z^\theta\le1+Z$ ensures integrability. Put $\mu\coloneqq\E[Z]$.
+Put $\mu\coloneqq\E[Z]$.
 If $\mu=0$, then $Z=0$ almost surely and the conclusion is immediate.
 If $\mu>0$, concavity of $z\mapsto z^\theta$ on $[0,\infty)$ gives
 \[
@@ -162,16 +159,14 @@ For $x,y\in Q$,
  \le\norm{g_x}_*\norm{x-y}
  \le L\norm{x-y}.
 \]
-The inequalities use~\eqref{eq:intro:subgradient}, H\"older's inequality
-(Lemma~\ref{lem:holder}), and $\norm{g_x}_*\le L$.
 Interchanging $x$ and $y$ proves~\eqref{eq:intro:lipschitz}.
 \end{proof}
 
 Inequality~\eqref{eq:intro:lipschitz} defines $L$-Lipschitz continuity.
 
 In the mirror-descent updates below, strong convexity of the regularizer
-bounds the distance between successive iterates;
-see~\eqref{eq:intro:md-movement}.
+bounds the distance between successive iterates.
+See~\eqref{eq:intro:md-movement}.
 
 \begin{Thm:Definition}[Strong convexity {\cite[Section~4.1.1]{orabona_modern_2023}}]\label{def:strong-convex}
 A function $f:Q\to\Real$ is $\sigma$-strongly convex with respect to
@@ -199,9 +194,9 @@ For $x_\theta\coloneqq(1-\theta)x+\theta y$ and $0<\theta<1$,
    -\frac\sigma2\theta(1-\theta)\norm{x-y}^2.
 \end{align*}
 Here (A) uses~\eqref{eq:intro:subgradient} with comparison point
-$x_\theta\in Q$ and $x_\theta-x=\theta(y-x)$; (B) uses
+$x_\theta\in Q$. Step (B) uses
 \eqref{eq:intro:strong-convexity} with weights $1-\theta$ and $\theta$.
-Subtracting $f(x)$, dividing by $\theta>0$, and letting
+Rearranging, dividing by $\theta>0$, and letting
 $\theta\downarrow0$ proves
 \eqref{eq:intro:strong-support}.
 \end{proof}
@@ -218,7 +213,7 @@ update into a bound relative to any feasible comparison point
 Let $C$ be a convex domain and $\Phi:C\to\Real$ a convex function,
 differentiable on $\operatorname{ri}(C)$, the interior relative
 to its affine hull. Derivatives are taken in that affine hull. The
-constraint set $Q\subseteq C$ can have smaller dimension. Define the reference set
+constraint set $Q\subseteq C$ can have smaller dimension. Define
 $Q_{\mathrm{ref}}\coloneqq Q\cap \operatorname{ri}(C)$. For $x\in Q$, $y\in Q_{\mathrm{ref}}$, the Bregman
 divergence~\cite{bregman1967relaxation} is
 \begin{equation}\label{eq:intro:bregman}
@@ -237,8 +232,8 @@ and subgradient $\nabla\Phi(y)$ gives
  D_\Phi(x,y)\ge\frac\sigma2\norm{x-y}^2,
  \qquad x\in Q,\quad y\in Q_{\mathrm{ref}}.
 \end{equation}
-Expanding each divergence using~\eqref{eq:intro:bregman} cancels the
-function values and gives the three-point identity
+Expanding each divergence using~\eqref{eq:intro:bregman} gives the
+three-point identity
 \begin{equation}\label{eq:intro:three-point}
  \inner{\nabla\Phi(x)-\nabla\Phi(y)}{z-x}
  =D_\Phi(z,y)-D_\Phi(z,x)-D_\Phi(x,y),
@@ -269,23 +264,20 @@ convexity of $Q$ gives $x_\theta\in Q$, so
 \end{align*}
 Here (A) is optimality in~\eqref{eq:bregman-min}, and (B) is
 \eqref{eq:intro:convexity} for $f$ with weights $1-\theta$ and $\theta$.
-Subtracting $(1-\theta)f(\hat x)+\alpha D_\Phi(\hat x,y)$ and dividing
-by $\theta>0$ gives
+Rearranging and dividing by $\theta>0$ gives
 \[
  f(\hat x)-f(z)
  \le\alpha\frac{D_\Phi(x_\theta,y)-D_\Phi(\hat x,y)}{\theta}.
 \]
 By~\eqref{eq:intro:bregman}, the difference quotient on the right tends to
 $\inner{\nabla\Phi(\hat x)-\nabla\Phi(y)}{z-\hat x}$ as
-$\theta\downarrow0$. This directional derivative exists because
-$\hat x\in\operatorname{ri}(C)$. Thus
+$\theta\downarrow0$. Thus
 \[
  f(\hat x)-f(z)
  \le\alpha\inner{\nabla\Phi(\hat x)-\nabla\Phi(y)}{z-\hat x}
  =\alpha\{D_\Phi(z,y)-D_\Phi(z,\hat x)-D_\Phi(\hat x,y)\}.
+ \qedhere
 \]
-The equality is~\eqref{eq:intro:three-point} with $x=\hat x$ and the
-same $y,z$; both $\hat x$ and $y$ belong to $Q_{\mathrm{ref}}$.
 \end{proof}
 
 \section{Quadratic and entropy geometries}\label{sec:intro:geometry}
@@ -344,7 +336,7 @@ $\nabla^2\Psi(q_s)=\operatorname{diag}(1/q_{s,i})$. Hence
 \end{equation}
 Step (A) is Cauchy--Schwarz from Lemma~\ref{lem:holder}, applied to
 the vectors with components $|v_i|/\sqrt{q_{s,i}}$ and
-$\sqrt{q_{s,i}}$; positivity makes the denominators valid.
+$\sqrt{q_{s,i}}$.
 Step (B) uses $\sum_iq_{s,i}\le1$ from~\eqref{eq:intro:simplices}.
 Taylor's formula with integral remainder yields
 \[
@@ -354,12 +346,9 @@ Taylor's formula with integral remainder yields
  =\frac12\norm{p-q}_1^2.
 \]
 Here (A) integrates~\eqref{eq:intro:entropy-hessian-bound} against the
-nonnegative weight $1-s$; its integral is $1/2$.
-If $p$ has zero coordinates, apply this bound to
-$p_\epsilon\coloneqq(1-\epsilon)p+\epsilon q>0$, where $0<\epsilon<1$.
-Convexity gives $p_\epsilon\in S_d$, and the convention
-$0\log0=0$ in~\eqref{eq:intro:negentropy} makes both sides continuous
-as $\epsilon\downarrow0$.
+nonnegative weight $1-s$.
+The same bound holds when $p$ has zero coordinates by continuity, using
+$0\log0=0$.
 For the initial bounds, $D_\Psi(\cdot,q)$ is convex for fixed $q>0$.
 Writing $e_i$ for the coordinate vectors, every point of $\Delta_d$ is a
 convex combination of the $e_i$, and every point of $S_d$ is a convex
@@ -377,10 +366,10 @@ these values prove~\eqref{eq:intro:entropy-initial}, including $d=1$.
 \end{proof}
 
 For the uniform initial points in~\eqref{eq:intro:entropy-initial},
-the initial-divergence term in the mirror-descent bound
+the term involving the initial Bregman divergence in the mirror-descent bound
 \eqref{eq:intro:md-regret} is at most $\log d/\eta$ on $\Delta_d$ and
 $\log(d+1)/\eta$ on $S_d$, where $\eta>0$ is the step size.
-The dual subgradient norm is $\ell_\infty$.
+We measure subgradients in the $\ell_\infty$ norm, dual to $\ell_1$.
 
 \begin{Thm:Lemma}[Entropy mirror-descent updates; cf.~{\cite[Section~5]{BECK2003167}}]\label{lem:intro:entropy-update}
 \label{ch4:lem:omd-closed-form}
@@ -480,7 +469,7 @@ For movement, set $u=x$ in~\eqref{eq:intro:md-pushback} and apply
  \le\eta\norm{g}_*\norm{x^+-x}.
 \]
 The last inequality is H\"older's. If $x^+=x$, the movement bound is
-immediate; otherwise divide by $\sigma\norm{x^+-x}>0$ to obtain
+immediate. Otherwise, divide by $\sigma\norm{x^+-x}>0$ to obtain
 \eqref{eq:intro:md-movement}.
 
 For the sequence of updates, convexity and summation of
@@ -493,8 +482,7 @@ For the sequence of updates, convexity and summation of
  &\le\frac{D_\Phi(u,x_1)}\eta
    +\frac\eta{2\sigma}\sum_{t=1}^T\norm{g_t}_*^2.
 \end{align*}
-The divergences telescope, and the final inequality uses
-$D_\Phi(u,x_{T+1})\ge0$. This proves~\eqref{eq:intro:md-regret} and
+This proves~\eqref{eq:intro:md-regret} and
 the same bound for the sum of inner products.
 \end{proof}
 

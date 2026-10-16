@@ -8,9 +8,12 @@ I formulated the research question concerning projection-free optimization
 for nonsmooth convex objectives. Neely proposed the core algorithm.
 I introduced a correction to the proposed algorithm and proved its
 convergence guarantees. Neely reviewed the resulting work.
-I used ChatGPT, primarily GPT-6 with some use of GPT-5.6, to
-refine proofs and improve the organization and editorial presentation of this
-chapter.
+
+Material from the 2024 article by Asgari and Neely~\cite{asgari2024nonsmooth}
+(\textcopyright~The Author(s)~2024) is adapted under the
+\href{https://creativecommons.org/licenses/by/4.0/}{Creative Commons
+Attribution 4.0 International license}. Notation, presentation, and analysis
+have been modified.
 
 \section{Introduction}
 
@@ -37,7 +40,7 @@ the objective gap remains bounded away from zero.
 \subsection{Method and scope}
 \label{sec:pfdom:contributions}
 
-The method of Asgari and Neely~\cite{asgari2026projectionfree} makes one
+The method of Asgari and Neely~\cite{asgari2024nonsmooth} makes one
 ordinary linear-oracle call over $\X$, one subgradient query on an auxiliary
 set $\Y\supseteq\X$, and one projection onto $\Y$ per update. Here,
 projection-free refers to avoiding projection onto $\X$. The method uses a
@@ -54,8 +57,7 @@ The results below use deterministic subgradients and an exact linear
 oracle. The published analysis also permits stochastic subgradients and
 inexact linear optimization~\cite{asgari2024nonsmooth}. Those variants use
 the same main proof ideas, with expectations and additional error terms.
-We omit them so that the extra notation does not obscure the method and
-its analysis. The numerical experiments are also outside this chapter's scope.
+The numerical experiments are also outside this chapter's scope.
 
 \section{Related work}
 \label{sec:pfdom:context}
@@ -127,8 +129,13 @@ additional linear inclusion constraints through proximal updates
 on the dual variables.
 
 The domain-separation method of Asgari and Neely
-\cite{asgari2026projectionfree} has the same oracle-complexity order as
-MOLES, using a single loop. Section~\ref{sec:pfdom:convex} gives its updates.
+\cite{asgari2024nonsmooth} uses a single loop and matches the
+oracle-complexity order of MOLES, with a smaller leading constant in the
+published worst-case linear-oracle bound under common Lipschitz and diameter
+bounds~\cite[Appendix~C.2.2]{thekumparampil2020projection}.
+Its convergence proof is more direct, using a telescoping argument without
+smoothing or inner-loop error estimates.
+Section~\ref{sec:pfdom:convex} gives its updates.
 Chapter~\ref{Section:projfree} extends this method to functional
 inequality constraints~\cite{asgari2024nonsmooth}.
 
@@ -151,7 +158,7 @@ Lan's randomized smoothing~\cite{lan2014complexity}
 MOLES~\cite{thekumparampil2020projection}
  & Ordinary linear oracle and easy auxiliary projection.
  & $O(\epsilon^{-2})$ for each oracle.\\[3pt]
-Domain separation~\cite{asgari2026projectionfree}
+Domain separation~\cite{asgari2024nonsmooth}
  & Ordinary linear oracle and easy auxiliary projection.
  & $O(\epsilon^{-2})$ for each oracle.\\
 \bottomrule
@@ -172,7 +179,7 @@ His model requires the output to be a convex combination of the
 initial point and the points returned by the linear oracle.
 His randomized smoothing method attains the optimal order in
 $\epsilon$ for linear oracle calls, with an additional dimension
-factor, and uses $O(\epsilon^{-4})$ subgradient calls.
+factor.
 MOLES and our general convex method have the required output form
 and match the linear oracle lower bound without the additional dimension
 factor, using $O(\epsilon^{-2})$ calls to each oracle.
@@ -182,8 +189,8 @@ For the domain-separation method, the bound
 $f(\bar x_T)-f^*\leq2LD/\sqrt T$ gives at most
 $\lceil4L^2D^2/\epsilon^2\rceil$ linear-oracle calls, including initialization,
 to attain objective accuracy $\epsilon$, for $L,D,\epsilon>0$.
-Its leading constant is smaller than the
-corresponding worst-case bound in the MOLES analysis
+Its leading constant is smaller than that of the corresponding worst-case
+MOLES bound
 \cite[Appendix~C.2.2]{thekumparampil2020projection}.
 
 \section{Problem and oracle assumptions}
@@ -201,6 +208,7 @@ including any linear-oracle call used for initialization.
 \Needspace{7\baselineskip}
 \begin{Thm:Assumption}[Domain and ordinary oracles]\label{ass:pfdom:oracles}
 The following conditions hold.
+\begin{singlespace}
 \begin{enumerate}[label=(\roman*)]
 \item The set $\X$ is nonempty, compact, and convex, with Euclidean diameter
 \[
@@ -220,6 +228,7 @@ $v\in\Real^n$, it returns
 \]
 where $0\leq L<\infty$ is known.
 \end{enumerate}
+\end{singlespace}
 \end{Thm:Assumption}
 
 An initial point can be obtained by calling $\operatorname{LOO}_\X(0)$,
@@ -232,9 +241,7 @@ in Assumption~\ref{ass:pfdom:oracles}, gives
 \begin{equation}\label{eq:pfdom:lipschitz}
     |f(y)-f(w)|\leq L\|y-w\|,\qquad y,w\in\Y.
 \end{equation}
-In particular, $f$ is continuous on $\X$. Since $\X$ is nonempty and
-compact, the Weierstrass theorem guarantees a minimizer $x^*\in\X$
-\cite{bertsekas1997nonlinear}.
+Let $x^*\in\X$ denote a minimizer of $f$ over $\X$.
 
 \subsection{Choosing the auxiliary set}
 \label{sec:pfdom:auxiliary-choice}
@@ -255,7 +262,7 @@ Projection onto the closed ball rescales a displacement
 that exceeds its radius, while projection onto the box clips each coordinate
 \cite[Section~3.2]{COMBETTES2021565}.
 
-A subgradient bound on $\X$ alone is not enough; it must hold on the
+A subgradient bound on $\X$ alone is not enough. This bound must hold on the
 chosen $\Y$. In the guarantee $f(\bar x_T)-f^*\leq2LD/\sqrt T$ of
 Corollary~\ref{cor:ch2-specialization}, $D$ bounds the diameter of $\X$.
 For fixed $\X$ and $T$, enlarging $\Y$ therefore weakens this guarantee
@@ -286,10 +293,10 @@ minimizing $\inner{q}{x}$ over $\X$ and $f(y)-\inner{q}{y}$ over $\Y$.
 Even at an optimal multiplier, these subproblems can have multiple
 minimizers, so independently selected minimizers need not satisfy
 $x=y$~\cite[Section~5.5.5]{boyd_vandenberghe_2004}.
-The multiplier update below gives the consensus identity
+The multiplier update below gives
 \eqref{eq:pfdom:consensus}.
-The linear oracle chooses $x_{t+1}$ by minimizing its
-$x$-dependent term at $q_t$. At iteration $t$, let $s_t$ denote the
+The linear oracle chooses $x_{t+1}$ by minimizing
+$\inner{q_t}{x}$ over $\X$. At iteration $t$, let $s_t$ denote the
 subgradient returned by the oracle at $y_t$, satisfying
 Assumption~\ref{ass:pfdom:oracles}(iii). The relevant subgradient and derivative are
 \[
@@ -307,10 +314,9 @@ This gives the coupled updates
     q_{t+1}&=q_t-\eta(y_{t+1}-x_{t+1}).
 \end{align}
 Eliminating $q_{t+1}$ gives an explicit update with one projection.
-For a nonempty closed convex $\Y$, first-order optimality for
-$\min_{w\in\Y}\|w-v\|^2/2$ characterizes $p=\Pi_\Y(v)$ by
+For a nonempty closed convex set $\Y$, Lemma~\ref{lem:intro:projection}
+characterizes $p=\Pi_\Y(v)$ by
 $\inner{p-v}{w-p}\geq0$ for every $w\in\Y$.
-This is the condition in Lemma~\ref{lem:intro:projection} with $Q=\Y$.
 Taking $p=y_{t+1}$ and $v=y_t+(q_{t+1}-s_t)/\alpha$ in this
 condition and multiplying by $\alpha>0$ gives
 \begin{equation}\label{eq:ch2-basic-subproblem}
@@ -330,13 +336,14 @@ same projection characterization gives the explicit update
     \frac{\alpha y_t+\eta x_{t+1}+q_t-s_t}{\alpha+\eta}\right).
 \end{equation}
 
-The linear oracle in Assumption~\ref{ass:pfdom:oracles}(ii) uses direction
-$q_t$. Comparing its minimizer $x_{t+1}$ with the feasible point $x^*\in\X$ gives
+By Assumption~\ref{ass:pfdom:oracles}(ii), comparing the linear-oracle
+minimizer $x_{t+1}$ with $x^*\in\X$ gives
 \begin{equation}\label{eq:pfdom:loo-optimality}
     \inner{q_t}{x_{t+1}-x^*}\leq0.
 \end{equation}
 
 \begin{algorithm}[H]
+\setstretch{1}
 \caption{Domain separation for a nonsmooth convex objective}
 \label{alg:pfdom:convex}
 \begin{algorithmic}[1]
@@ -352,9 +359,6 @@ $q_t$. Comparing its minimizer $x_{t+1}$ with the feasible point $x^*\in\X$ give
 \State \Return $\displaystyle\bar x_T\coloneqq\frac1T\sum_{t=1}^T x_t$
 \end{algorithmic}
 \end{algorithm}
-
-The algorithm performs $T-1$ updates. Each update uses one ordinary linear-oracle
-call, one subgradient call, and one projection onto $\Y$.
 
 \section{Convergence analysis}
 \label{sec:pfdom:convergence}
@@ -413,280 +417,132 @@ these counts have the claimed order for fixed $L,D$ as $\epsilon\downarrow0$.
 
 \subsection{Proof of the objective bound}
 
-The following lemma converts a cumulative bound at the query points
-into an objective bound at $\bar x_T$. Lipschitz continuity bounds the
-objective error caused by disagreement between the two averages, and
-the quadratic multiplier term controls this error.
-
-\begin{Thm:Lemma}[Objective bound at the returned point]
-\label{lem:pfdom:equality-transfer}
-Let $T\geq1$ be an integer, $\eta>0$, and let $x_t,y_t$ be
-points in a convex set $\Y\subseteq\Real^n$.
-Set $\bar x_T\coloneqq T^{-1}\sum_{t=1}^T x_t$, initialize $q_1\coloneqq0$ and $x_1=y_1$,
-and update
-\begin{equation}\label{eq:pfdom:transfer-multiplier-update}
-    q_{t+1}\coloneqq q_t-\eta(y_{t+1}-x_{t+1}),\qquad t=1,\ldots,T-1.
-\end{equation}
-Then the following identities hold:
-\begin{align}
-    -\inner{q_t}{y_{t+1}-x_{t+1}}
-      +\frac\eta2\|y_{t+1}-x_{t+1}\|^2
-    &=\frac{\|q_{t+1}\|^2-\|q_t\|^2}{2\eta},
-      \label{eq:lem2_q_squared}\\
-    q_T&=\eta T(\bar x_T-\bar y_T),\qquad
-    \bar y_T\coloneqq\frac1T\sum_{t=1}^T y_t.
-      \label{eq:pfdom:consensus}
-\end{align}
-Suppose additionally that $f:\Y\to\Real$ is convex and $L$-Lipschitz,
-with finite $L$. For any real reference value $f_c$ and finite constant $C$,
-\begin{equation}\label{eq:pfdom:transfer-potential}
-    \sum_{t=1}^T[f(y_t)-f_c]+\frac{\|q_T\|^2}{2\eta}\leq C
-\end{equation}
-implies
-\begin{equation}\label{eq:pfdom:objective-transfer}
-    f(\bar x_T)-f_c\leq\frac CT+\frac{L^2}{2\eta T}.
-\end{equation}
-\end{Thm:Lemma}
-\begin{proof}
-For $t=1,\ldots,T-1$, substituting the multiplier update
-\eqref{eq:pfdom:transfer-multiplier-update} into $\|q_{t+1}\|^2$ and
-expanding gives
-\begin{align*}
- \|q_{t+1}\|^2
- &=\|q_t-\eta(y_{t+1}-x_{t+1})\|^2\\
- &=\|q_t\|^2-2\eta\inner{q_t}{y_{t+1}-x_{t+1}}
-   +\eta^2\|y_{t+1}-x_{t+1}\|^2.
-\end{align*}
-Subtracting $\|q_t\|^2$ from both sides and dividing by $2\eta>0$
-yields~\eqref{eq:lem2_q_squared}.
-
-Summing~\eqref{eq:pfdom:transfer-multiplier-update} and using $q_1=0$
-and $x_1=y_1$ gives
-\begin{align*}
- q_T
- &=q_T-q_1
- =\sum_{t=1}^{T-1}(q_{t+1}-q_t)
- =-\eta\sum_{t=1}^{T-1}(y_{t+1}-x_{t+1})\\
- &=\eta\sum_{t=2}^{T}(x_t-y_t)
- =\eta\sum_{t=1}^{T}(x_t-y_t)
- =\eta T(\bar x_T-\bar y_T).
-\end{align*}
-The first line telescopes; the second shifts the index and inserts the
-zero term $x_1-y_1$, proving~\eqref{eq:pfdom:consensus}.
-
-Since $\Y$ is convex, both averages belong to $\Y$, and
-\begin{align*}
- T\{f(\bar x_T)-f_c\}
- &\overset{\text{(A)}}{\le}T\{f(\bar y_T)-f_c\}+LT\|\bar x_T-\bar y_T\|\\
- &\overset{\text{(B)}}{\le}\sum_{t=1}^T\{f(y_t)-f_c\}+\frac L\eta\|q_T\|.
-\end{align*}
-Here (A) uses the lemma's Lipschitz assumption at $\bar x_T,\bar y_T$;
-(B) uses Jensen's inequality~\eqref{eq:intro:jensen} with points $y_t$
-and weights $1/T$, followed by~\eqref{eq:pfdom:consensus} and $\eta>0$.
-Using~\eqref{eq:pfdom:transfer-potential} and completing the square gives
-\begin{align*}
- T\{f(\bar x_T)-f_c\}
- &\le C+\frac L\eta\|q_T\|-
-                 \frac{\|q_T\|^2}{2\eta}\\
- &=C+\frac{L^2}{2\eta}
-   -\frac1{2\eta}(\|q_T\|-L)^2\\
- &\le C+\frac{L^2}{2\eta}.
-\end{align*}
-Dividing by $T$ proves~\eqref{eq:pfdom:objective-transfer}.
-\end{proof}
-
 \begin{proof}[Proof of Theorem~\ref{thm:pfdom:convex}]
-\par\medskip\noindent\textbf{Primal comparison.}
-Fix a minimizer $x^*\in\X$. For $t=1,\ldots,T-1$, define the convex
-function
-\[
- \psi_t(y)\coloneqq\inner{s_t-q_t}{y}+\frac\eta2\|y-x_{t+1}\|^2.
-\]
-The explicit projection update~\eqref{eq:ch2-basic-updates} is equivalent to
-\begin{equation}\label{eq:pfdom:quadratic-minimization}
- y_{t+1}=\argmin_{y\in\Y}
- \left\{\psi_t(y)+\frac\alpha2\|y-y_t\|^2\right\}.
-\end{equation}
-Indeed, expanding the objective in~\eqref{eq:pfdom:quadratic-minimization}
-gives
-\begin{align*}
- \psi_t(y)+\frac\alpha2\|y-y_t\|^2
- &=\frac{\alpha+\eta}{2}\|y\|^2
-   -\inner{\alpha y_t+\eta x_{t+1}+q_t-s_t}{y}\\
- &\quad+\frac\alpha2\|y_t\|^2+\frac\eta2\|x_{t+1}\|^2.
-\end{align*}
-Completing the square therefore gives the projection
-in~\eqref{eq:ch2-basic-updates}.
-
-Apply~\eqref{eq:pushback} with $f=\psi_t$, coefficient $\alpha$,
-reference point $y_t$, comparison point $x^*\in\Y$, and quadratic geometry
-\[
- C=\Real^n,\qquad Q=\Y,\qquad
- \Phi(y)\coloneqq\frac12\|y\|^2,\qquad
- D_\Phi(u,v)=\frac12\|u-v\|^2.
-\]
-Here $Q_{\mathrm{ref}}=\Y$, so $y_t,y_{t+1}$ are admissible reference points.
-The three-point inequality gives (A):
-\begin{align*}
- &\psi_t(y_{t+1})+\frac\alpha2\|y_{t+1}-y_t\|^2\\
- &\quad\overset{\mathrm{(A)}}{\le}
- \psi_t(x^*)+\frac\alpha2\|x^*-y_t\|^2
-   -\frac\alpha2\|x^*-y_{t+1}\|^2.
-\end{align*}
-Expanding $\psi_t$ and moving its linear terms to the left gives
-\begin{equation}\label{eq:pfdom:quadratic-comparison}
-\begin{split}
- &\inner{s_t-q_t}{y_{t+1}-x^*}
-   +\frac\eta2\|y_{t+1}-x_{t+1}\|^2
-   +\frac\alpha2\|y_{t+1}-y_t\|^2\\
- &\quad\le\frac\eta2\|x_{t+1}-x^*\|^2
-   +\frac\alpha2\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr).
-\end{split}
-\end{equation}
-
-\par\medskip\noindent\textbf{Multiplier and subgradient terms.}
-Splitting $y_{t+1}-x^*=(y_{t+1}-x_{t+1})+(x_{t+1}-x^*)$
-in~\eqref{eq:pfdom:quadratic-comparison} gives
-\begin{equation}\label{eq:pfdom:multiplier-comparison}
-\begin{split}
- &-\inner{q_t}{y_{t+1}-x^*}
-   +\frac\eta2\|y_{t+1}-x_{t+1}\|^2\\
- &\quad=-\inner{q_t}{y_{t+1}-x_{t+1}}
-   +\frac\eta2\|y_{t+1}-x_{t+1}\|^2
-   -\inner{q_t}{x_{t+1}-x^*}\\
- &\quad\overset{\mathrm{(A)}}{=}
-   \frac{\|q_{t+1}\|^2-\|q_t\|^2}{2\eta}
-   -\inner{q_t}{x_{t+1}-x^*}\\
- &\quad\overset{\mathrm{(B)}}{\ge}
-   \frac{\|q_{t+1}\|^2-\|q_t\|^2}{2\eta}.
-\end{split}
-\end{equation}
-Here (A) uses the multiplier identity~\eqref{eq:lem2_q_squared}, and
-(B) uses the linear-oracle inequality~\eqref{eq:pfdom:loo-optimality}.
-
-To handle the subgradient term, write
+Fix a minimizer $x^*\in\X$. For $t=1,\ldots,T-1$,
 \begin{equation}\label{eq:pfdom:subgradient-young}
 \begin{aligned}
  f(y_t)-f^*
  &\overset{\mathrm{(A)}}{\le}\inner{s_t}{y_t-x^*}\\
  &=\inner{s_t}{y_{t+1}-x^*}+\inner{s_t}{y_t-y_{t+1}}\\
- &\overset{\mathrm{(B)}}{\le}\inner{s_t}{y_{t+1}-x^*}
-   +\frac{\|s_t\|^2}{2\alpha}
-   +\frac\alpha2\|y_{t+1}-y_t\|^2\\
- &\overset{\mathrm{(C)}}{\le}\inner{s_t}{y_{t+1}-x^*}
-   +\frac{L^2}{2\alpha}
-   +\frac\alpha2\|y_{t+1}-y_t\|^2.
+ &\overset{\mathrm{(B)}}{\le}\inner{q_{t+1}}{y_{t+1}-x^*}
+   +\alpha\inner{y_t-y_{t+1}}{y_{t+1}-x^*}
+   +\inner{s_t}{y_t-y_{t+1}}\\
+ &=\inner{q_{t+1}}{y_{t+1}-x^*}
+   +\frac\alpha2\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)\\
+ &\quad+\inner{s_t}{y_t-y_{t+1}}
+   -\frac\alpha2\|y_t-y_{t+1}\|^2\\
+ &\overset{\mathrm{(C)}}{\le}\inner{q_{t+1}}{y_{t+1}-x^*}
+   +\frac\alpha2\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)
+   +\frac{\|s_t\|^2}{2\alpha}\\
+ &\overset{\mathrm{(D)}}{\le}\inner{q_{t+1}}{y_{t+1}-x^*}
+   +\frac\alpha2\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)
+   +\frac{L^2}{2\alpha}.
 \end{aligned}
 \end{equation}
-Here (A) is the subgradient inequality~\eqref{eq:intro:subgradient}
-at $y_t$, with subgradient $s_t$ and comparison point $x^*$,
-using $f(x^*)=f^*$. Step (B) uses Young's
-inequality~\eqref{eq:intro:holder-young} with
-\[
- g=s_t,\qquad v=y_t-y_{t+1},\qquad\gamma=\alpha>0.
-\]
-Step (C) uses $\|s_t\|\le L$ from
+Here (A) uses~\eqref{eq:intro:subgradient}; (B) uses
+\eqref{eq:ch2-basic-subproblem} with $w=x^*$; (C) uses
+Young's inequality~\eqref{eq:intro:holder-young}; and (D) uses
 Assumption~\ref{ass:pfdom:oracles}(iii).
 
-Substituting~\eqref{eq:pfdom:multiplier-comparison}
-and~\eqref{eq:pfdom:subgradient-young}
-into~\eqref{eq:pfdom:quadratic-comparison} now gives
-\begin{equation}\label{eq:pfdom:one-step}
-\begin{split}
- &f(y_t)-f^*
-   +\frac{\|q_{t+1}\|^2-\|q_t\|^2}{2\eta}\\
+By the multiplier update~\eqref{eq:ch2-implicit-pair},
+\begin{equation}\label{eq:pfdom:multiplier-comparison}
+\begin{aligned}
+ &\inner{q_{t+1}}{y_{t+1}-x^*}\\
+ &\quad=\inner{q_t}{x_{t+1}-x^*}
+   +\inner{q_t}{y_{t+1}-x_{t+1}}
+   -\eta\inner{y_{t+1}-x_{t+1}}{y_{t+1}-x^*}\\
+ &\quad=\inner{q_t}{x_{t+1}-x^*}
+   +\frac{\|q_t\|^2-\|q_{t+1}\|^2}{2\eta}
+   +\frac\eta2\|y_{t+1}-x_{t+1}\|^2\\
+ &\qquad-\frac\eta2\bigl(\|y_{t+1}-x_{t+1}\|^2
+                +\|y_{t+1}-x^*\|^2-\|x_{t+1}-x^*\|^2\bigr)\\
+ &\quad=\frac{\|q_t\|^2-\|q_{t+1}\|^2}{2\eta}
+   +\inner{q_t}{x_{t+1}-x^*}
+   +\frac\eta2\bigl(\|x_{t+1}-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)\\
  &\quad\overset{\mathrm{(A)}}{\le}
-   \frac\alpha2\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)
-   +\frac\eta2\|x_{t+1}-x^*\|^2+\frac{L^2}{2\alpha}\\
- &\quad\overset{\mathrm{(B)}}{\le}
-   \frac\alpha2\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)
-   +\frac{\eta D^2}{2}+\frac{L^2}{2\alpha}.
-\end{split}
+   \frac{\|q_t\|^2-\|q_{t+1}\|^2}{2\eta}+\frac{\eta D^2}{2}.
+\end{aligned}
 \end{equation}
-For (A), \eqref{eq:pfdom:multiplier-comparison} bounds the multiplier
-terms from below, while~\eqref{eq:pfdom:subgradient-young} bounds the
-remaining subgradient and movement terms from below by
-$f(y_t)-f^*-L^2/(2\alpha)$. Step (B) uses $x_{t+1},x^*\in\X$
-and the diameter bound in Assumption~\ref{ass:pfdom:oracles}(i).
+Here (A) uses~\eqref{eq:pfdom:loo-optimality}, the diameter bound in
+Assumption~\ref{ass:pfdom:oracles}(i), and $\eta>0$.
+Substituting~\eqref{eq:pfdom:multiplier-comparison}
+into~\eqref{eq:pfdom:subgradient-young} gives
+\begin{equation}\label{eq:pfdom:one-step}
+\begin{aligned}
+ &f(y_t)-f^*+\frac{\|q_{t+1}\|^2-\|q_t\|^2}{2\eta}\\
+ &\quad\le\frac\alpha2\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)
+   +\frac{L^2}{2\alpha}+\frac{\eta D^2}{2}.
+\end{aligned}
+\end{equation}
 
-\par\medskip\noindent\textbf{Summation and terminal term.}
-Summing~\eqref{eq:pfdom:one-step} over $t=1,\ldots,T-1$, the two
-differences telescope:
-\begin{align*}
- \sum_{t=1}^{T-1}\bigl(\|q_{t+1}\|^2-\|q_t\|^2\bigr)
- &=\|q_T\|^2-\|q_1\|^2,\\
- \sum_{t=1}^{T-1}\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)
- &=\|y_1-x^*\|^2-\|y_T-x^*\|^2.
-\end{align*}
-Consequently, using $q_1=0$,
+Summing~\eqref{eq:pfdom:one-step} and using $q_1=0$ gives
 \begin{equation}\label{eq:pfdom:summed-one-step}
-\begin{split}
+\begin{aligned}
  &\sum_{t=1}^{T-1}[f(y_t)-f^*]+\frac{\|q_T\|^2}{2\eta}\\
- &\quad\le\frac\alpha2\|y_1-x^*\|^2
-   -\frac\alpha2\|y_T-x^*\|^2
+ &\quad\le\frac\alpha2\bigl(\|y_1-x^*\|^2-\|y_T-x^*\|^2\bigr)
    +(T-1)\left(\frac{L^2}{2\alpha}+\frac{\eta D^2}{2}\right)\\
  &\quad\overset{\mathrm{(A)}}{\le}\frac{\alpha D^2}{2}
    -\frac\alpha2\|y_T-x^*\|^2
    +(T-1)\left(\frac{L^2}{2\alpha}+\frac{\eta D^2}{2}\right).
-\end{split}
-\end{equation}
-Here (A) uses $y_1=x_1\in\X$, $x^*\in\X$, and
-Assumption~\ref{ass:pfdom:oracles}(i).
-
-The sum in~\eqref{eq:pfdom:summed-one-step} does not yet include
-$f(y_T)-f^*$. For this terminal term,
-\begin{equation}\label{eq:pfdom:terminal}
-\begin{aligned}
- f(y_T)-f^*&\overset{\mathrm{(A)}}{\le}L\|y_T-x^*\|\\
- &\overset{\mathrm{(B)}}{\le}\frac{L^2}{2\alpha}
-   +\frac\alpha2\|y_T-x^*\|^2.
 \end{aligned}
 \end{equation}
-Step (A) uses Lipschitz continuity~\eqref{eq:pfdom:lipschitz}
-at $y_T,x^*\in\Y$. Step (B) uses the scalar form of Young's
-inequality~\eqref{eq:intro:holder-young} with $g=L$,
-$v=\|y_T-x^*\|$, and $\gamma=\alpha>0$.
-
-Adding~\eqref{eq:pfdom:terminal} to~\eqref{eq:pfdom:summed-one-step}
-cancels the terminal squared-distance terms. Thus
+Here (A) uses $y_1=x_1\in\X$ and
+Assumption~\ref{ass:pfdom:oracles}(i). Also,
+\begin{equation}\label{eq:pfdom:terminal}
+ f(y_T)-f^*\overset{\mathrm{(A)}}{\le}L\|y_T-x^*\|
+ \overset{\mathrm{(B)}}{\le}\frac{L^2}{2\alpha}
+   +\frac\alpha2\|y_T-x^*\|^2.
+\end{equation}
+Here (A) uses~\eqref{eq:pfdom:lipschitz}, and (B) uses
+Young's inequality~\eqref{eq:intro:holder-young}.
+Adding~\eqref{eq:pfdom:terminal} to~\eqref{eq:pfdom:summed-one-step} gives
 \begin{equation}\label{eq:pfdom:potential-bound}
-\begin{split}
+\begin{aligned}
  &\sum_{t=1}^T[f(y_t)-f^*]+\frac{\|q_T\|^2}{2\eta}\\
  &\quad\le\frac{\alpha D^2}{2}
    +(T-1)\left(\frac{L^2}{2\alpha}+\frac{\eta D^2}{2}\right)
    +\frac{L^2}{2\alpha}\\
  &\quad=\frac{TL^2}{2\alpha}+\frac{\alpha D^2}{2}
-   +\frac{(T-1)\eta D^2}{2}\eqqcolon C_T^{(0)}.
-\end{split}
-\end{equation}
-For $T=1$, the sums over $t=1,\ldots,T-1$ are empty, and the same
-calculation remains valid.
-
-\par\medskip\noindent\textbf{Output bound.}
-Apply Lemma~\ref{lem:pfdom:equality-transfer} with $f_c=f^*$
-and $C=C_T^{(0)}$. Its points lie in $\Y$ because
-$x_t\in\X\subseteq\Y$ and $y_t\in\Y$. Its initialization and
-multiplier-update hypotheses hold by Algorithm~\ref{alg:pfdom:convex},
-and its convexity and Lipschitz hypotheses follow from the convexity of $f$
-and~\eqref{eq:pfdom:lipschitz}. Therefore,
-\begin{equation}\label{eq:pfdom:convex-transfer}
-\begin{aligned}
- f(\bar x_T)-f^*
- &\overset{\mathrm{(A)}}{\le}\frac{C_T^{(0)}}{T}
-   +\frac{L^2}{2\eta T}\\
- &=\frac1T\left(\frac{TL^2}{2\alpha}+\frac{\alpha D^2}{2}
-   +\frac{(T-1)\eta D^2}{2}\right)+\frac{L^2}{2\eta T}\\
- &=\frac{L^2}{2\alpha}+\frac{\alpha D^2}{2T}
-   +\frac{(T-1)\eta D^2}{2T}+\frac{L^2}{2\eta T}.
+   +\frac{(T-1)\eta D^2}{2}\eqqcolon C_T.
 \end{aligned}
 \end{equation}
-Here (A) is precisely the objective-transfer
-inequality~\eqref{eq:pfdom:objective-transfer},
-using~\eqref{eq:pfdom:potential-bound}.
-Since every $x_t\in\X$ and $\X$ is convex, $\bar x_T\in\X$.
-Hence $f(\bar x_T)\ge f^*$, proving the lower bound
-in~\eqref{eq:ch2-basic-bound} as well.
+For $T=1$, the sums over $t=1,\ldots,T-1$ are empty.
+
+Set $\bar y_T\coloneqq T^{-1}\sum_{t=1}^T y_t$.
+By~\eqref{eq:ch2-implicit-pair}, $q_1=0$, and $x_1=y_1$,
+\begin{equation}\label{eq:pfdom:consensus}
+ q_T=\sum_{t=1}^{T-1}(q_{t+1}-q_t)
+ =\eta\sum_{t=2}^T(x_t-y_t)
+ =\eta T(\bar x_T-\bar y_T).
+\end{equation}
+Since $\bar x_T,\bar y_T\in\Y$,
+\begin{equation}\label{eq:pfdom:convex-transfer}
+\begin{aligned}
+ T[f(\bar x_T)-f^*]
+ &\overset{\mathrm{(A)}}{\le}T[f(\bar y_T)-f^*]
+   +LT\|\bar x_T-\bar y_T\|\\
+ &\overset{\mathrm{(B)}}{\le}\sum_{t=1}^T[f(y_t)-f^*]
+   +\frac L\eta\|q_T\|\\
+ &\overset{\mathrm{(C)}}{\le}C_T
+   +\frac L\eta\|q_T\|-\frac{\|q_T\|^2}{2\eta}\\
+ &=C_T+\frac{L^2}{2\eta}
+   -\frac1{2\eta}(\|q_T\|-L)^2\\
+ &\overset{\mathrm{(D)}}{\le}C_T+\frac{L^2}{2\eta}.
+\end{aligned}
+\end{equation}
+Here (A) uses~\eqref{eq:pfdom:lipschitz}; (B) uses
+Jensen's inequality~\eqref{eq:intro:jensen} and~\eqref{eq:pfdom:consensus};
+(C) uses~\eqref{eq:pfdom:potential-bound}; and (D) uses $\eta>0$.
+Thus,
+\[
+ f(\bar x_T)-f^*
+ \le\frac{C_T}{T}+\frac{L^2}{2\eta T}
+ =\frac{L^2}{2\alpha}+\frac{\alpha D^2}{2T}
+   +\frac{(T-1)\eta D^2}{2T}+\frac{L^2}{2\eta T}.
+\]
+Convexity of $\X$ gives $\bar x_T\in\X$, so $f(\bar x_T)\ge f^*$.
 \end{proof}
+
 
 \subsection{Subgradient bounds on auxiliary sets}
 \label{sec:pfdom:auxiliary-example}
@@ -699,8 +555,8 @@ This function has subgradients bounded by $e$ on $\X$, but has no finite
 global subgradient bound. If $x_1\coloneqq1/2$ and $D\coloneqq2$, the enclosing ball in
 \eqref{eq:pfdom:enclosing-sets} is $\Y=[-3/2,5/2]$, where the required
 bound increases to $L=e^{5/2}$. Indeed, $f(x)=e^{|x|}$ has derivative
-magnitude $e^{|x|}$ for $x\ne0$ and subdifferential $[-1,1]$ at zero;
-the largest $|x|$ in this auxiliary interval is $5/2$.
+magnitude $e^{|x|}$ for $x\ne0$ and subdifferential $[-1,1]$ at zero.
+The largest $|x|$ in this auxiliary interval is $5/2$.
 
 For a convex $L$-Lipschitz function on the convex set $\X$, the
 construction
@@ -709,27 +565,27 @@ construction
 \end{equation}
 is convex and $L$-Lipschitz on $\Real^n$ and agrees with $f$ on $\X$
 by the McShane--Whitney extension theorem
-\cite[Theorem~2.3 and Proposition~3.2]{lmcs:6105}; see also
+\cite[Theorem~2.3 and Proposition~3.2]{lmcs:6105}. See also
 \cite[Appendix~D]{asgari2024nonsmooth} for its use in projection-free
-optimization. In the preceding example it gives
+optimization. In the preceding example, taking $L\coloneqq e$
+in~\eqref{eq:pfdom:lipschitz-extension} gives
 $\widetilde f(x)=f(x)$ for $|x|\leq1$ and $\widetilde f(x)=e|x|$ otherwise.
-For the latter formula, take $L\coloneqq e$ in~\eqref{eq:pfdom:lipschitz-extension}.
-If $x>1$ and $z\in[-1,1]$, the subgradient inequality
+Indeed, if $x>1$ and $z\in[-1,1]$, the subgradient inequality
 \eqref{eq:intro:subgradient} at $1$ with subgradient $e$ gives
 $f(z)\geq e+e(z-1)=ez$. Hence
-$f(z)+e|x-z|\geq ex$, with equality at $z=1$; symmetry gives the case $x<-1$.
+$f(z)+e|x-z|\geq ex$, with equality at $z=1$. Symmetry gives the case $x<-1$.
 The extension preserves the values on $\X$, but evaluating it involves
-optimization over $\X$; its existence does not provide an inexpensive
+optimization over $\X$. Its existence does not provide an inexpensive
 subgradient oracle.
 
 \section{Discussion and conclusion}
 \label{sec:pfdom:discussion}
 
-The method returns a feasible average while evaluating subgradients
-throughout the auxiliary set. Its implementation is useful when projection
+The method returns a feasible average while querying subgradients
+in the auxiliary set. It is useful when projection
 onto this set and linear optimization over $\X$ are inexpensive.
-The bound depends on a uniform subgradient norm bound on the auxiliary
-set, and the stated parameter choice uses the prescribed query budget.
+The guarantee depends on a uniform subgradient norm bound on the auxiliary
+set.
 
 Chapter~\ref{Section:projfree} extends this construction to functional
 inequalities. It keeps the ordinary linear oracle for $\X$ and uses

@@ -4,6 +4,7 @@
 \noindent\textbf{Source and author contributions.}
 This chapter is based on research published jointly with Michael J. Neely
 in~\cite{10.1145/3428337} and presented at \emph{ACM SIGMETRICS 2021}.
+Both authors contributed equally to the original research.
 Neely developed the main research idea and proposed most of the original
 algorithm. I contributed algorithmic refinements, including separating
 the allocation into total energy usage and allocation proportions.
@@ -14,14 +15,13 @@ To simplify the presentation, this chapter specializes the general energy
 bounds used in the published work~\cite{10.1145/3428337} to
 nonnegative arrivals and total per-slot energy usage, both bounded above
 by one.
-The core usage-and-proportion algorithm is retained from the published
-paper. Most of the subsequent changes in this chapter were produced with
-AI assistance at my request. These include reorganizing the exposition
-and proofs, making the conditional-mean assumption explicit, correcting
-and completing the sufficient battery-capacity calculation, tightening
-the initial-potential term in the regret bound, and making step-size
-tuning explicit. The published paper's simulation study is not reproduced
-here.
+The core algorithm, which separately updates total energy usage and
+allocation proportions, is retained from the published paper.
+The published paper's simulation study is not reproduced here.
+
+Most changes to the published work in this chapter were produced with AI
+assistance at my request, including clarifying assumptions
+and refining the analysis. The \hyperref[sec:ai-assistance]{Preface} gives details.
 
 \section{Introduction}
 
@@ -68,7 +68,7 @@ comparator must satisfy
     \sum_{i=1}^nX_i^*\leq\overline{A},
     \qquad \overline{A}\coloneqq\expect{A_t}.
 \]
-This mean-budget comparator need not satisfy the battery constraint on
+This comparator need not satisfy the battery constraint on
 every slot.
 
 The method in \cite{Yu2019} achieves an $O(\sqrt{T})$ regret bound with an
@@ -90,8 +90,8 @@ stated above.
 For $n$ parallel wireless channels, let $S_{t,i}\geq0$ be the power gain,
 $N_{t,i}>0$ the noise power, and $W_i>0$ the effective bandwidth.
 With unit-duration slots, additive white Gaussian noise, and channel
-conditions fixed within each slot, the negative-throughput cost from
-Shannon's formula~\cite[Section~5.2.1, Eq.~(5.12)]{tse2005fundamentals} is
+conditions fixed within each slot, define the cost as the negative of the
+throughput given by Shannon's formula~\cite[Section~5.2.1, Eq.~(5.12)]{tse2005fundamentals}:
 \[
     c_t(\mathbf{X}_t)
     \coloneqq-\sum_{i=1}^n W_i\log_2\left(
@@ -100,7 +100,7 @@ Shannon's formula~\cite[Section~5.2.1, Eq.~(5.12)]{tse2005fundamentals} is
 
 This function is convex in the nonnegative allocation. The channel
 parameters are unknown when the allocation is chosen and revealed
-afterward; they need not be independent across channels or slots.
+afterward. They need not be independent across channels or slots.
 The energy arrivals must satisfy the assumptions in
 Section~\ref{Assumptions}, including \eqref{eq:energy:conditional-mean}.
 For solar harvesting, the i.i.d. arrival model is a simplification:
@@ -118,16 +118,16 @@ A uniform bound on $W_iS_{t,i}/N_{t,i}$ therefore suffices.
 
 \subsection{Related work}
 
-The fixed-set OCO benchmark and the convex regret bound are reviewed in
-Section~\ref{sec:prelim:notation}. The common mirror
+The OCO benchmark over a fixed feasible set and the convex regret bound
+are reviewed in Section~\ref{sec:prelim:notation}. The common mirror
 descent analysis is in Section~\ref{sec:intro:mirror-descent}.
 
-Unlike the slotwise battery constraint and state recursion here,
-work on long-term constraints considers fixed constraint functions
+Constrained online convex optimization considers fixed constraint functions
 \cite{mahdavi2012trading,jenatton2016adaptive,titov2018mirror,JMLR:v21:16-494,Yuan2018}
-or stochastic time-varying constraints
-\cite{yu2017online,chen2018bandit,liakopoulos2019cautious}. Bregman methods
-also appear in constrained OCO \cite{wei2020online}, although that model
+or time-varying constraints, including stochastic and adversarial models
+\cite{yu2017online,chen2018bandit,liakopoulos2019cautious}, rather than
+the slotwise battery constraint and state recursion studied here.
+Bregman methods also appear in constrained OCO \cite{wei2020online}, although that model
 does not include the physical storage dynamics studied here.
 
 In more general online learning models with arbitrarily varying rewards
@@ -149,10 +149,8 @@ With i.i.d. arrivals, online power-control policies target long-term
 throughput or general concave utility
 \cite{shaviv2016universally,arafa2017energy}.
 Online throughput maximization with battery overflow is studied
-in \cite{wu2016online}; network models couple energy management with
+in \cite{wu2016online}. Network models couple energy management with
 traffic utility \cite{Huang2013,leonidas-energy-harvest}.
-Here, convex costs are revealed only after allocation, and regret is
-measured against a fixed allocation constrained by the mean energy arrival.
 
 Finite-capacity inventory models also couple decisions through stored resources
 \cite{yang2020online,lin2019competitive,chau2016cost,neely-inventory-control-cdc2010}.
@@ -163,7 +161,8 @@ can be nonlinear and is revealed only after the decision.
 \subsection{Contributions and scope}
 
 We give explicit usage and proportion updates and a sufficient capacity
-under which the available-energy cap does not change the usage decisions.
+under which the constraint imposed by the energy currently available
+does not change the usage decisions.
 The tuned controller uses a planned horizon and the known
 subgradient bound, but does not require the mean energy arrival.
 
@@ -172,8 +171,8 @@ subgradient bound, but does not require the mean energy arrival.
 
 We follow the conventions in Section~\ref{sec:intro:notation}. The system
 has $n\geq2$ subsystems, and regret is evaluated over slots $t\in[T]$ for
-an integer $T\geq1$. The recursions and their one-step and feasibility
-bounds apply to any continuation with the same parameters and bounds.
+an integer $T\geq1$. The recursions, one-step bounds, and feasibility bounds
+also apply beyond this horizon when the parameters and bounds are unchanged.
 
 The fixed allocation set is
 \begin{equation}\label{eq:X-set}
@@ -262,9 +261,7 @@ Since $\overline A\leq1$, the allocations satisfying
   \mathcal A\coloneqq\left\{\mathbf x\in\Real_+^n:
     \sum_{i=1}^n x_i\leq\overline A\right\}.
 \end{equation}
-The set $\mathcal A$ contains the zero allocation and is compact,
-and the costs are continuous. A best fixed allocation therefore exists
-for every realized cost sequence. We define regret by
+We define regret by
 \begin{equation}
 \label{eq:ch3-regret-definition}
   \Reg_T(\mathcal A)
@@ -321,15 +318,15 @@ Since $\mathbf P_t$ is a probability vector,
 |h_t|\leq\sum_{i=1}^nP_{t,i}|g_{t,i}|
 \overset{\mathrm{(A)}}{\leq}G.
 \end{equation}
-Here (A) uses \eqref{eq:G} and $\sum_iP_{t,i}=1$; the first inequality
+Here (A) uses \eqref{eq:G} and $\sum_iP_{t,i}=1$. The first inequality
 is the triangle inequality applied to \eqref{eq:energy:gh}.
 
 Although $c_t$ is convex in $\mathbf X$, the function $c_t(u\mathbf p)$
 need not be jointly convex in $(u,\mathbf p)$. It is convex in either
 variable with the other fixed, by affine composition
-\cite[Sections~3.1.4 and~3.2.2]{boyd_vandenberghe_2004}.
+\cite[Section~3.2.2]{boyd_vandenberghe_2004}.
 For a fixed comparator $\mathbf X^*=U^*\mathbf P^*\in\mathcal A$, take
-$U^*=\sum_iX_i^*$ and $\mathbf P^*\in\Delta_n$; when $U^*=0$,
+$U^*=\sum_iX_i^*$ and $\mathbf P^*\in\Delta_n$. When $U^*=0$,
 any $\mathbf P^*\in\Delta_n$ gives this factorization. Then
 \begin{equation}\label{eq:energy:split-identity}
 \mathbf X_t-\mathbf X^*
@@ -341,10 +338,10 @@ Applying \eqref{eq:energy:subgradient} and substituting
  c_t(\mathbf X_t)-c_t(\mathbf X^*) \overset{\mathrm{(A)}}{\leq}\mathbf g_t^\top(\mathbf X_t-\mathbf
    X^*) =h_t(U_t-U^*)+U^*\mathbf g_t^\top(\mathbf P_t-\mathbf P^*).
 \end{equation}
-Here (A) is the subgradient inequality at $\mathbf X_t$; the equality
+Here (A) is the subgradient inequality at $\mathbf X_t$. The equality
 uses \eqref{eq:energy:gh}. The usage and proportion updates use $h_t$
 and $\mathbf g_t$, respectively. The analysis multiplies the proportion
-bound by $U^*$, which is fixed across slots; neither update uses $U^*$.
+bound by $U^*$, which is fixed across slots. Neither update uses $U^*$.
 Direct linearization in $\mathbf p$ at fixed $U_t$ would instead give
 $U_t\mathbf g_t$.
 
@@ -360,8 +357,6 @@ to the probability simplex:
 D_\Psi(\mathbf p,\mathbf q)=\sum_{i=1}^n p_i\log\frac{p_i}{q_i},
 \qquad \mathbf p,\mathbf q\in\Delta_n,\quad q_i>0.
 \end{equation}
-The linear terms in \eqref{eq:intro:generalized-kl} cancel because
-$\sum_i p_i=\sum_i q_i=1$.
 We use the convention $0\log0=0$. The initial proportions are uniform.
 Lemma~\ref{lem:intro:entropy} therefore gives
 \[
@@ -398,13 +393,11 @@ $\sum_iX_{t+1,i}=U_{t+1}$ from \eqref{eq:energy:decomposition} give
 $B_{t+2}=\min\{B_{t+1}+A_{t+1}-U_{t+1},B_{\mathrm{max}}\}$.
 Substitute this expression into \eqref{eq:energy:price}, and use
 $b-\min\{z,b\}=\max\{b-z,0\}$ and $\gamma>0$.
-Thus the price increases when usage exceeds arrivals and decreases, down
-to zero, when arrivals exceed usage.
 
 This battery-dependent penalty is related to drift-plus-penalty
 energy-harvesting control in
 \cite[Section~III-B and Lemma~3]{Yu2019}.
-For the battery price $\pi_t$, define the quadratic potential
+For the battery price $\pi_t$, define
 \begin{equation}\label{eq:energy:price-potential}
 V_t\coloneqq\frac{\pi_t^2}{2\gamma}
    =\frac{\gamma}{2}(B_{\mathrm{max}}-B_{t+1})^2.
@@ -428,7 +421,6 @@ where
 \[
 I_{t+1}\coloneqq[0,\min\{1,B_{t+1}+A_{t+1}\}].
 \]
-This interval is nonempty because $B_{t+1}$ and $A_{t+1}$ are nonnegative.
 Completing the square in \eqref{eq:a-decision} gives
 $\tfrac12[u-(U_t-\eta(h_t+\pi_t))]^2$ plus a term independent of $u$.
 Thus the usage update is the Euclidean projection onto $I_{t+1}$:
@@ -454,11 +446,8 @@ P_{t+1,i}
 =\frac{P_{t,i}\exp(-\lambda g_{t,i})}
        {\sum_jP_{t,j}\exp(-\lambda g_{t,j})}.
 \end{equation}
-The objective in~\eqref{eq:p-decision} is strictly convex, so the proportion
-update has a unique solution. The initial proportions are positive.
+The initial proportions are positive.
 The update formula therefore keeps $P_{t,i}>0$ for every slot and subsystem.
-Subsystems with smaller subgradient components gain proportion relative
-to those with larger components.
 
 \subsection{Algorithm specification}\label{section:alg-spec}
 
@@ -541,28 +530,21 @@ Consequently,
 and the relaxed algorithm coincides with Algorithm~\ref{Alg1}.
 \end{Thm:Theorem}
 \begin{proof}
-By $U_1=0$ and \eqref{eq:relaxed-A}, $0\leq U_t\leq1$;
-hence $rU_t\geq0$.
-Also, \eqref{eq:B-update} gives $B_{t+1}\leq B_{\mathrm{max}}$.
+By $U_1=0$ and \eqref{eq:relaxed-A}, $0\leq U_t\leq1$.
+Thus $rU_t\geq0$, and \eqref{eq:B-update} gives $B_{t+1}\leq B_{\mathrm{max}}$.
 For $t=1$,
 \begin{equation}\label{eq:energy:reserve-base}
-\begin{aligned}
- B_2&=\min\{A_1,B_{\mathrm{max}}\}\\
-    &\geq0\\
-    &=rU_1.
-\end{aligned}
+ B_2=\min\{A_1,B_{\mathrm{max}}\}\geq0=rU_1.
 \end{equation}
 This uses $B_1=U_1=0$, \eqref{eq:B-update}, and $A_1,B_{\mathrm{max}}\geq0$.
 Assume \eqref{eq:induction} at slot $t$.
 
 \emph{Case 1: $B_{t+1}\geq1+r$.} Then
 \begin{equation}\label{eq:energy:reserve-high}
-\begin{aligned}
  (1+r)U_{t+1}
- &\overset{\mathrm{(A)}}{\leq}1+r\\
- &\overset{\mathrm{(B)}}{\leq}B_{t+1}\\
- &\overset{\mathrm{(C)}}{\leq}B_{t+1}+A_{t+1}.
-\end{aligned}
+ \overset{\mathrm{(A)}}{\leq}1+r
+ \overset{\mathrm{(B)}}{\leq}B_{t+1}
+ \overset{\mathrm{(C)}}{\leq}B_{t+1}+A_{t+1}.
 \end{equation}
 Steps (A)--(C) use $U_{t+1}\leq1$, the case assumption, and $A_{t+1}\geq0$.
 
@@ -570,27 +552,26 @@ Steps (A)--(C) use $U_{t+1}\leq1$, the case assumption, and $A_{t+1}\geq0$.
 \begin{equation}\label{eq:energy:low-battery-estimates}
 \begin{aligned}
  h_t+\pi_t
- &\overset{\mathrm{(A)}}{\geq}-G+\pi_t\\
- &=-G+\gamma(B_{\mathrm{max}}-B_{t+1})\\
+ &\overset{\mathrm{(A)}}{\geq}-G+\pi_t
+   =-G+\gamma(B_{\mathrm{max}}-B_{t+1})\\
  &\overset{\mathrm{(B)}}{\geq}-G+\gamma(B_{\mathrm{req}}(r)-B_{t+1})\\
  &=-G+\gamma\left(\frac G\gamma+1+r
               +\frac{1}{\eta\gamma(1+r)}-B_{t+1}\right)\\
- &=-G+G+\gamma(1+r-B_{t+1})+\frac{1}{\eta(1+r)}\\
  &=\gamma(1+r-B_{t+1})+\frac{1}{\eta(1+r)}\\
  &\overset{\mathrm{(C)}}{\geq}\frac{1}{\eta(1+r)}.
 \end{aligned}
 \end{equation}
 Steps (A)--(C) use \eqref{eq:energy:h-bound},
 $B_{\mathrm{max}}\geq B_{\mathrm{req}}(r)$ with $\gamma>0$, and
-$B_{t+1}<1+r$, respectively; the equalities substitute \eqref{eq:Bmax-a}.
+$B_{t+1}<1+r$, respectively.
 Thus
 \begin{equation}\label{eq:battery-usage-decrease}
 \begin{aligned}
  U_{t+1}
  &=[U_t-\eta(h_t+\pi_t)]_0^1\\
  &\overset{\mathrm{(A)}}{\leq}
-       \left[U_t-\frac{\eta}{\eta(1+r)}\right]_0^1\\
- &=\left[U_t-\frac{1}{1+r}\right]_0^1\\
+       \left[U_t-\frac{\eta}{\eta(1+r)}\right]_0^1
+   =\left[U_t-\frac{1}{1+r}\right]_0^1\\
  &=\max\left\{U_t-\frac{1}{1+r},0\right\}.
 \end{aligned}
 \end{equation}
@@ -601,17 +582,16 @@ The equalities use \eqref{eq:relaxed-A}, $U_t\leq1$, and $1/(1+r)>0$. Thus
  (1+r)U_{t+1}
  &\overset{\mathrm{(A)}}{\leq}
       (1+r)\max\left\{U_t-\frac{1}{1+r},0\right\}\\
- &=\max\left\{(1+r)\left(U_t-\frac{1}{1+r}\right),0\right\}\\
- &=\max\{(1+r)U_t-1,0\}\\
- &=\max\{rU_t+U_t-1,0\}\\
- &\overset{\mathrm{(B)}}{\leq}\max\{rU_t,0\}\\
- &=rU_t\\
- &\overset{\mathrm{(C)}}{\leq}B_{t+1}\\
- &\overset{\mathrm{(D)}}{\leq}B_{t+1}+A_{t+1}.
+ &=\max\left\{(1+r)\left(U_t-\frac{1}{1+r}\right),0\right\}
+   =\max\{(1+r)U_t-1,0\}\\
+ &=\max\{rU_t+U_t-1,0\}
+   \overset{\mathrm{(B)}}{\leq}\max\{rU_t,0\}=rU_t\\
+ &\overset{\mathrm{(C)}}{\leq}B_{t+1}
+   \overset{\mathrm{(D)}}{\leq}B_{t+1}+A_{t+1}.
 \end{aligned}
 \end{equation}
-Step (A) uses \eqref{eq:battery-usage-decrease} and $1+r>0$;
-(B) uses $U_t\leq1$; (C) is the induction hypothesis; and (D) uses
+Step (A) uses \eqref{eq:battery-usage-decrease} and $1+r>0$.
+Step (B) uses $U_t\leq1$. Step (C) is the induction hypothesis. Step (D) uses
 $A_{t+1}\geq0$. The maximum is monotone, and $rU_t\geq0$.
 
 In both cases, \eqref{eq:B-update} gives
@@ -621,28 +601,25 @@ In both cases, \eqref{eq:B-update} gives
  &=\min\{B_{t+1}+A_{t+1}-U_{t+1},B_{\mathrm{max}}\}-rU_{t+1}\\
  &=\min\{B_{t+1}+A_{t+1}-U_{t+1}-rU_{t+1},B_{\mathrm{max}}-rU_{t+1}\}\\
  &=\min\{B_{t+1}+A_{t+1}-(1+r)U_{t+1},B_{\mathrm{max}}-rU_{t+1}\}\\
- &\overset{\mathrm{(A)}}{\geq}\min\{0,B_{\mathrm{max}}-rU_{t+1}\}\\
- &\overset{\mathrm{(B)}}{\geq}\min\{0,B_{\mathrm{max}}-r\}\\
- &\overset{\mathrm{(C)}}{\geq}\min\{0,0\}\\
- &=0.
+ &\overset{\mathrm{(A)}}{\geq}\min\{0,B_{\mathrm{max}}-rU_{t+1}\}
+   \overset{\mathrm{(B)}}{\geq}\min\{0,B_{\mathrm{max}}-r\}\\
+ &\overset{\mathrm{(C)}}{\geq}\min\{0,0\}=0.
 \end{aligned}
 \end{equation}
 By monotonicity of the minimum, (A) follows from
-\eqref{eq:energy:reserve-high} or \eqref{eq:energy:reserve-low};
-(B) uses $r\geq0$ and $U_{t+1}\leq1$; and (C) uses
+\eqref{eq:energy:reserve-high} or \eqref{eq:energy:reserve-low}.
+Step (B) uses $r\geq0$ and $U_{t+1}\leq1$. Step (C) uses
 $B_{\mathrm{max}}\geq B_{\mathrm{req}}(r)>r$ from \eqref{eq:Bmax-a}.
 This completes the induction. Finally,
 \begin{equation}\label{eq:energy:feasibility-consequence}
-\begin{aligned}
- U_t&\overset{\mathrm{(A)}}{\leq}U_t+B_{t+1}\\
- &\overset{\mathrm{(B)}}{\leq}U_t+(B_t+A_t-U_t)\\
- &=B_t+A_t.
-\end{aligned}
+ U_t\overset{\mathrm{(A)}}{\leq}U_t+B_{t+1}
+ \overset{\mathrm{(B)}}{\leq}U_t+(B_t+A_t-U_t)=B_t+A_t.
 \end{equation}
-Here (A) uses \eqref{eq:induction}; (B) uses \eqref{eq:B-update}.
+Here (A) uses \eqref{eq:induction}. Step (B) uses \eqref{eq:B-update}.
 Thus \eqref{eq:energy:relaxed-feasibility} holds, and the minimizer in
 \eqref{eq:a-decision-relax} belongs to the interval in \eqref{eq:a-decision}.
-Uniqueness and identical initialization give identical algorithms.
+The unique minimizers therefore coincide, and identical initialization
+gives identical iterates.
 \end{proof}
 
 \subsection{Minimizing the sufficient battery-capacity bound}
@@ -659,8 +636,8 @@ For $0<\eta\gamma\leq1$, \eqref{eq:Bmax-a} gives
  &\geq0.
 \end{aligned}
 \end{equation}
-The inequality in \eqref{eq:energy:capacity-square} is nonnegativity
-of a square. Equality holds at $r=1/\sqrt{\eta\gamma}-1\geq0$,
+Equality in \eqref{eq:energy:capacity-square} holds at
+$r=1/\sqrt{\eta\gamma}-1\geq0$,
 where nonnegativity follows from $\eta\gamma\leq1$.
 For $\eta\gamma>1$,
 \begin{equation}\label{eq:energy:capacity-boundary}
@@ -673,8 +650,8 @@ For $\eta\gamma>1$,
  &\overset{\mathrm{(B)}}{\geq}0.
 \end{aligned}
 \end{equation}
-In \eqref{eq:energy:capacity-boundary}, (A) uses $1+r\geq1$ and $r\geq0$;
-(B) uses $\eta\gamma>1$ and $r\geq0$. Equality holds at $r=0$.
+In \eqref{eq:energy:capacity-boundary}, (A) uses $1+r\geq1$ and $r\geq0$.
+Step (B) uses $\eta\gamma>1$ and $r\geq0$. Equality holds at $r=0$.
 Hence \eqref{eq:energy:capacity-square}--\eqref{eq:energy:capacity-boundary} give
 \begin{equation}
 \label{eq:battery-optimal-a}
@@ -699,10 +676,8 @@ suffices for Theorem~\ref{Theorem of battery} with $r=r^*$.
 \section{Regret analysis of the relaxed algorithm}
 \label{regert sec}
 
-We use the comparison set $\mathcal A$ of allocations
-$\mathbf X\in\mathcal X$ with $\sum_iX_i\leq\overline A$,
-specified by \eqref{eq:A1}--\eqref{eq:A2}, and the regret defined in
-\eqref{eq:ch3-regret-definition}.
+We analyze the regret in \eqref{eq:ch3-regret-definition} against the
+comparison set $\mathcal A$ in \eqref{eq:energy:comparison-set}.
 
 Throughout this section, assume that $B_{\mathrm{max}}\geq B_{\mathrm{req}}(r)$
 in \eqref{eq:Bmax-a} for some $r\geq0$. Under this condition,
@@ -717,18 +692,13 @@ The price and subgradients in
   \|\mathbf{g}_t\|_\infty\leq G,\qquad |h_t|\leq G.
 \end{equation}
 The price bound follows from \eqref{eq:energy:price} and
-\eqref{eq:induction}; the other two bounds are \eqref{eq:G} and
+\eqref{eq:induction}. The other two bounds are \eqref{eq:G} and
 \eqref{eq:energy:h-bound}.
 For the proof only, extend the usage and battery recursions to slot $T+1$
 using the next arrival $A_{T+1}$ under the same arrival model. The resulting
 values $U_{T+1}$ and $B_{T+2}$ let us sum the one-step bounds through slot
 $T$. No decision through slot $T$ uses this future arrival, and the regret
 in \eqref{eq:ch3-regret-definition} includes costs only through slot $T$.
-
-Adding the usage bound, $U^*$ times the proportion bound, and the price
-drift cancels $\pi_tU_{t+1}$. The remaining term is bounded by
-$\pi_t(\overline A-A_{t+1})$, whose conditional mean is zero by
-\eqref{eq:energy:conditional-mean}.
 
 \subsection{Bounds for the two mirror-descent updates}
 
@@ -748,7 +718,7 @@ Apply Lemma~\ref{lem:intro:mirror-descent} to \eqref{eq:p-decision}
 with $Q=\Delta_n$, $\Phi=\Psi$, $\sigma=1$, step size $\lambda>0$,
 and $(x,x^+,u)=(\mathbf P_t,\mathbf P_{t+1},\mathbf P^*)$ in the
 $\ell_1/\ell_\infty$ norm pair. The curvature follows from
-\eqref{eq:intro:entropy-curvature}; the reference points are positive by
+\eqref{eq:intro:entropy-curvature}. The reference points are positive by
 \eqref{eq:p-decision-observe}, while the comparator may lie on the boundary:
 \[
 \begin{aligned}
@@ -761,7 +731,7 @@ $\ell_1/\ell_\infty$ norm pair. The curvature follows from
  +\frac{\lambda G^2}{2}.
 \end{aligned}
 \]
-Step (A) is \eqref{eq:intro:md-one-step}; (B) uses \eqref{eq:G}.
+Step (A) is \eqref{eq:intro:md-one-step}. Step (B) uses \eqref{eq:G}.
 \end{proof}
 
 \begin{Thm:Lemma}[Usage update]
@@ -775,12 +745,15 @@ For every $U^*\in[0,1]$ and every $t\geq1$,
 \end{Thm:Lemma}
 
 \begin{proof}
-Apply \eqref{eq:pushback} in Lemma~\ref{lem:pushback} to
-\eqref{eq:a-decision-relax} with $Q=[0,1]$,
-$f(u)=\eta(h_t+\pi_t)u$, $\alpha=1$, and
-$(y,\hat x,z)=(U_t,U_{t+1},U^*)$, using the quadratic generator $u^2/2$.
-Both reference points belong to $Q$, and the generator is differentiable
-on $\Real$. Thus
+Projection optimality in \eqref{eq:relaxed-A} gives
+\begin{equation}\label{eq:energy:usage-optimality}
+\begin{aligned}
+ \eta(h_t+\pi_t)(U_{t+1}-U^*)
+ &\leq(U_t-U_{t+1})(U_{t+1}-U^*)\\
+ &=\frac{(U^*-U_t)^2-(U^*-U_{t+1})^2-(U_t-U_{t+1})^2}{2}.
+\end{aligned}
+\end{equation}
+Hence
 \begin{equation}
 \label{eq:main2}
 \begin{aligned}
@@ -795,15 +768,12 @@ on $\Real$. Thus
    \frac{(U^*-U_t)^2-(U^*-U_{t+1})^2}{2}+\frac{\eta^2G^2}{2}.
 \end{aligned}
 \end{equation}
-Step (A) substitutes the quadratic divergence into \eqref{eq:pushback}.
-The next equality completes the square. Step (B) drops that square and
-uses $|h_t|\leq G$ from \eqref{eq:energy:h-bound}.
+Step (A) uses \eqref{eq:energy:usage-optimality}.
+Step (B) uses $|h_t|\leq G$ from \eqref{eq:energy:h-bound}.
 Divide by $\eta>0$ to obtain \eqref{eq Part2}.
 \end{proof}
-The price term uses $U_{t+1}$. This keeps the price out of the error term,
-which is $\eta G^2/2$.
 
-\subsection{A common learning and battery potential}
+\subsection{Regret bound}
 \label{sec:energy:battery-potential}
 
 For $V_t=\pi_t^2/(2\gamma)$ in \eqref{eq:energy:price-potential},
@@ -820,69 +790,6 @@ $[z]_+^2\leq z^2$ give
 Step (A) expands $[\pi_t+\gamma(U_{t+1}-A_{t+1})]^2-\pi_t^2$
 and divides by $2\gamma>0$. For (B), both $A_{t+1}$ and $U_{t+1}$
 belong to $[0,1]$, so $(A_{t+1}-U_{t+1})^2\leq1$.
-
-\begin{Thm:Lemma}[Comparison using the mean energy arrival]
-\label{lem:ch3-mean-energy}
-For every comparison usage $U^*\leq\overline{A}$, we have
-\[
-  \pi_t(U^*-A_{t+1})\leq\pi_t(\overline A-A_{t+1})
-\]
-for every realization. This also holds when $U^*$ is random and chosen
-after observing the full cost sequence. The expression on the right has
-conditional mean zero:
-\begin{equation}
-\label{quu1 bound}
-  \expect{\pi_t(\overline A-A_{t+1})\mid\mathcal F_t}=0.
-\end{equation}
-\end{Thm:Lemma}
-
-\begin{proof}
-The inequality follows from $\pi_t\geq0$ in
-\eqref{eq:ch3-shifted-battery} and $U^*\leq\overline A$ in \eqref{eq:A1}
-for every realization. Prices and arrivals are bounded, so the conditional
-expectation is well defined. Since $\pi_t$ is determined by $\mathcal F_t$,
-we can take it outside the conditional expectation; then
-\eqref{eq:energy:conditional-mean} gives the final equality:
-\[
- \expect{\pi_t(\overline A-A_{t+1})\mid\mathcal F_t}
- =\pi_t\bigl(\overline A-\expect{A_{t+1}\mid\mathcal F_t}\bigr)=0.\qedhere
-\]
-\end{proof}
-
-For $\mathbf X^*=U^*\mathbf P^*\in\mathcal A$ as in
-\eqref{eq:energy:split-identity}, define the comparison potential
-\begin{equation}
-\label{eq:ch3-comparison-potential}
-  \mathcal H_t(\mathbf{X}^*)
-  \coloneqq\frac{(U^*-U_t)^2}{2\eta}
-   +\frac{U^*}{\lambda}D_\Psi(\mathbf{P}^*,\mathbf{P}_t)
-   +\frac{\pi_t^2}{2\gamma}.
-\end{equation}
-
-\begin{Thm:Lemma}[One-step comparison]
-\label{lem:energy:combined-potential}
-Simultaneously for every $\mathbf X^*\in\mathcal A$, on every sample path,
-\begin{equation}
-\label{eq:ch3-combined-step}
- c_t(\mathbf X_t)-c_t(\mathbf X^*) +\mathcal H_{t+1}(\mathbf X^*)-\mathcal H_t(\mathbf X^*)
-   \leq{}\frac{(\eta+\lambda U^*)G^2+\gamma}{2} +\pi_t(\overline A-A_{t+1}).
-\end{equation}
-\end{Thm:Lemma}
-
-\begin{proof}
-Combining the learning and price bounds gives
-\[
- c_t(\mathbf X_t)-c_t(\mathbf X^*) +\mathcal H_{t+1}(\mathbf X^*)-\mathcal H_t(\mathbf X^*)
-   \overset{\mathrm{(A)}}{\leq} \frac{(\eta+\lambda U^*)G^2+\gamma}{2} +\pi_t(U^*-A_{t+1}).
-\]
-For (A), substitute \eqref{eq PArt1}, multiplied by $U^*\geq0$,
-and \eqref{eq Part2} into \eqref{eq:energy:split-bound}, and add
-\eqref{eq:include}. The potential is defined in
-\eqref{eq:ch3-comparison-potential}. The sample-path inequality of
-Lemma~\ref{lem:ch3-mean-energy} now gives \eqref{eq:ch3-combined-step}.
-\end{proof}
-
-\subsection{Regret bound}
 
 \begin{Thm:Theorem}[Expected regret]
 \label{Main Theorem}
@@ -906,8 +813,45 @@ Then, for every $T\geq1$,
 
 \begin{proof}
 Fix a sample path and any comparison allocation
-$\mathbf X^*=U^*\mathbf P^*\in\mathcal A$. Uniform initialization and
-\eqref{eq:energy:entropy-divergence} give
+$\mathbf X^*=U^*\mathbf P^*\in\mathcal A$. Define
+\begin{equation}
+\label{eq:ch3-comparison-potential}
+  \mathcal H_t(\mathbf{X}^*)
+  \coloneqq\frac{(U^*-U_t)^2}{2\eta}
+   +\frac{U^*}{\lambda}D_\Psi(\mathbf{P}^*,\mathbf{P}_t)
+   +\frac{\pi_t^2}{2\gamma}.
+\end{equation}
+Then
+\begin{equation}\label{eq:ch3-combined-step}
+\begin{aligned}
+ &c_t(\mathbf X_t)-c_t(\mathbf X^*)
+   +\mathcal H_{t+1}(\mathbf X^*)-\mathcal H_t(\mathbf X^*)\\
+ &\quad\overset{\mathrm{(A)}}{\leq}
+   \frac{(\eta+\lambda U^*)G^2+\gamma}{2}
+   +\pi_t(U^*-U_{t+1})+\pi_t(U_{t+1}-A_{t+1})\\
+ &\quad=\frac{(\eta+\lambda U^*)G^2+\gamma}{2}
+   +\pi_t(U^*-A_{t+1})\\
+ &\quad\overset{\mathrm{(B)}}{\leq}
+   \frac{(\eta+\lambda U^*)G^2+\gamma}{2}
+   +\pi_t(\overline A-A_{t+1}).
+\end{aligned}
+\end{equation}
+For (A), substitute \eqref{eq PArt1}, multiplied by $U^*\geq0$,
+and \eqref{eq Part2} into \eqref{eq:energy:split-bound}, and add
+\eqref{eq:include}. Step (B) uses $\pi_t\geq0$ from
+\eqref{eq:ch3-shifted-battery} and $U^*\leq\overline A$ from \eqref{eq:A1}.
+Summing \eqref{eq:ch3-combined-step} gives
+\begin{equation}\label{eq:energy:comparison-sum}
+\begin{aligned}
+ \sum_{t=1}^T[c_t(\mathbf X_t)-c_t(\mathbf X^*)]
+ &\leq\frac{(\eta+\lambda U^*)G^2+\gamma}{2}\,T
+   +\mathcal H_1(\mathbf X^*)-\mathcal H_{T+1}(\mathbf X^*)\\
+ &\quad+\sum_{t=1}^T\pi_t(\overline A-A_{t+1}).
+\end{aligned}
+\end{equation}
+Here $\mathcal H_{T+1}(\mathbf X^*)\geq0$ since $U^*\geq0$ and
+KL divergence is nonnegative (Lemma~\ref{lem:intro:entropy}).
+Uniform initialization and \eqref{eq:energy:entropy-divergence} give
 \[
  D_\Psi(\mathbf P^*,\mathbf P_1)
  =\log n+\sum_{i=1}^n P_i^*\log P_i^*\leq\log n,
@@ -922,18 +866,12 @@ because $0\leq P_i^*\leq1$, with $0\log0=0$. Consequently,
    +\frac{\overline A\log n}{\lambda}+\frac{\gamma B_{\mathrm{max}}^2}{2}.
 \end{aligned}
 \end{equation}
-In (A), substitute $U_1=0$ in
-\eqref{eq:ch3-comparison-potential}, use
-$0\leq U^*\leq\overline A$
-from \eqref{eq:energy:comparison-set}, and apply the entropy bound above;
-$\eta,\lambda>0$ preserve the inequalities. Step (B) uses
+Step (A) uses $U_1=0$, $0\leq U^*\leq\overline A$ from
+\eqref{eq:energy:comparison-set}, and the entropy bound above in
+\eqref{eq:ch3-comparison-potential}, with $\eta,\lambda>0$. Step (B) uses
 $0\leq\pi_1\leq\gamma B_{\mathrm{max}}$ from
 \eqref{eq:ch3-shifted-battery} and $\gamma>0$.
-Summing \eqref{eq:ch3-combined-step} over slots $1,\ldots,T$ cancels the
-intermediate potential terms. The remaining terminal potential is
-nonnegative because $U^*\geq0$ and KL divergence is nonnegative
-(Lemma~\ref{lem:intro:entropy}). Dropping its negative contribution and
-using the initial-potential bound gives
+Therefore,
 \begin{equation}
 \label{main after expet}
 \begin{aligned}
@@ -946,22 +884,28 @@ using the initial-potential bound gives
    +\sum_{t=1}^T\pi_t(\overline A-A_{t+1}).
 \end{aligned}
 \end{equation}
-Step (A) uses $U^*\leq\overline A$ in the summed error term and
-\eqref{eq:energy:initial-comparison-potential} for the initial potential.
-The right side is independent of the comparison allocation. Maximizing
-the left side over $\mathbf X^*\in\mathcal A$ therefore gives
-$\Reg_T(\mathcal A)$, including when the best allocation depends on the
-full realized cost sequence.
+Step (A) uses $U^*\leq\overline A$, $\mathcal H_{T+1}(\mathbf X^*)\geq0$,
+and \eqref{eq:energy:initial-comparison-potential} in
+\eqref{eq:energy:comparison-sum}.
+The bound holds simultaneously for every $\mathbf X^*\in\mathcal A$,
+and its right side is independent of $\mathbf X^*$.
+Taking the supremum over $\mathbf X^*\in\mathcal A$ gives the same bound for
+$\Reg_T(\mathcal A)$, including a comparator chosen in hindsight.
 
-The absolute value of each cost difference is at most $2G$
-by \eqref{eq:energy:lipschitz}, since both allocations are nonnegative
-and have $\ell_1$ norm at most $1$ by \eqref{eq:X-set}.
-Thus $|\Reg_T(\mathcal A)|\leq2GT$. The arrival bounds and
-\eqref{eq:ch3-shifted-battery} also bound each price term by
-$|\pi_t(\overline A-A_{t+1})|\leq\gamma B_{\mathrm{max}}$.
-We can therefore take expectations in the resulting regret bound.
-By the tower property and \eqref{quu1 bound}, every summand in the price
-term has mean zero, giving \eqref{eq: Regret}.
+By \eqref{eq:energy:lipschitz}, \eqref{eq:X-set},
+\eqref{eq:energy:arrival-bound}, and \eqref{eq:ch3-shifted-battery},
+\[
+ |\Reg_T(\mathcal A)|\leq2GT,\qquad
+ |\pi_t(\overline A-A_{t+1})|\leq\gamma B_{\mathrm{max}}.
+\]
+Since $\pi_t$ is $\mathcal F_t$-measurable,
+\eqref{eq:energy:conditional-mean} gives
+\begin{equation}\label{quu1 bound}
+ \expect{\pi_t(\overline A-A_{t+1})\mid\mathcal F_t}
+ =\pi_t\bigl(\overline A-\expect{A_{t+1}\mid\mathcal F_t}\bigr)=0.
+\end{equation}
+Taking expectations in the regret bound and applying the tower property
+gives \eqref{eq: Regret}.
 \end{proof}
 
 \subsection{Choosing the parameters}

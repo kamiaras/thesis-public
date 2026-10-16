@@ -10,7 +10,15 @@ Yu~\cite{neely2019lagrangian}. Their treatment of Lagrangian methods served
 as a starting point and source of inspiration for my development of the
 multiplier update in the published paper. I proved the guarantees of the
 resulting method. Neely reviewed the method and analysis.
-The original update rules remain unchanged; only the constraints are replaced by their positive parts. GPT-6 Astra suggested this modification, developed the corresponding proofs, and helped with the chapter’s exposition.
+The original update rules remain unchanged. Only the constraints are
+replaced by their positive parts. GPT-6 Astra suggested this modification
+and developed the corresponding proofs.
+
+Material from the 2024 article by Asgari and Neely~\cite{asgari2024nonsmooth}
+(\textcopyright~The Author(s)~2024) is adapted under the
+\href{https://creativecommons.org/licenses/by/4.0/}{Creative Commons
+Attribution 4.0 International license}. Notation, presentation, and analysis
+have been modified.
 
 \section{Problem and method}
 
@@ -43,12 +51,12 @@ subgradients. Its multiplier update avoids projection onto a bounded set.
 Its primal step still requires a proximal operation over the original domain.
 
 Exact penalty methods incorporate constraint violation into the objective
-\cite{di1994exact}. Under the assumption that a Lagrange multiplier exists, a
-sufficiently large coefficient makes the penalized and constrained problems
-have the same minimizers. Choosing a coefficient that guarantees this
-property a priori requires a suitable bound on the norm of a Lagrange
-multiplier, and a larger coefficient can increase the Lipschitz bound used
-in the analysis.
+\cite{di1994exact}. In the convex setting considered here, if a Lagrange
+multiplier exists, a sufficiently large coefficient makes the penalized and
+constrained problems have the same minimizers. Choosing a coefficient based
+on this guarantee a priori requires a suitable bound on the norm of a
+Lagrange multiplier, and a larger coefficient can increase the Lipschitz
+bound used in the analysis.
 
 \subsection{Projection-free methods with functional constraints}
 
@@ -96,7 +104,7 @@ do not compare running time.
 
 \section{Contributions and scope}
 
-This chapter gives a combined proof of a joint bound on the objective gap
+This chapter proves a joint bound on the objective gap
 and squared constraint violation at the averaged output for the algorithm
 of Asgari and Neely~\cite{asgari2024nonsmooth}, applied to clipped
 constraints with exact deterministic oracles.
@@ -114,11 +122,9 @@ also has an $O(T^{-1/2})$ upper bound, as stated in
 The method uses at most $T$ calls to each oracle: $T$ constraint-vector
 evaluations, $T-1$ joint subgradient queries, and $T-1$ linear-oracle calls.
 It also performs $T-1$ projections onto the auxiliary set.
-These counts assume that $x_1\in\X$ is supplied; obtaining $x_1$ with one
+These counts assume that $x_1\in\X$ is supplied. Obtaining $x_1$ with one
 additional linear-oracle call keeps the linear-oracle count within the
 budget $T$.
-Exact constraint values $h(y)$ and subgradient selections satisfying
-\eqref{eq:ch4-cb-oracles} must be available at every $y\in\Y$.
 The published paper's stochastic and inexact-oracle results,
 application examples, and numerical experiments are outside the scope of
 the present chapter.
@@ -127,7 +133,7 @@ the present chapter.
 \label{sec:ch4-assumptions}
 
 We follow the notation of Section~\ref{sec:intro:notation}. All norms are
-Euclidean; vector inequalities and positive parts are componentwise. Let
+Euclidean. Vector inequalities and positive parts are componentwise. Let
 $f,h_1,\ldots,h_m:\Real^n\to\Real$ be finite-valued and convex. We consider
 
 \begin{equation}\label{eq:ch4-cb-problem}
@@ -136,7 +142,7 @@ f^*\coloneqq\min_{x\in\X}\{f(x):h(x)\le0\},
 \end{equation}
 
 \begin{Thm:Assumption}[Domain and exact deterministic oracles]\label{ass:ch2-oracles}
-Assume $\X$ is nonempty, compact, and convex; $\Y$ is closed and convex; and a feasible minimizer $x^*$ exists. Fix positive bounds $D,L,G$ such that
+Assume $\X$ is nonempty, compact, and convex; $\Y$ is closed and convex; and a feasible minimizer $x^*$ exists. Fix known positive upper bounds $D,L,G$ such that
 
 \begin{equation}\label{eq:ch4-cb-domain}
 \begin{gathered}
@@ -145,7 +151,6 @@ x^*\in\X,\qquad h(x^*)\le0,\qquad f(x^*)=f^*.
 \end{gathered}
 \end{equation}
 
-The constants $D,L,G$ are known positive upper bounds.
 For every $v\in\Real^n$, an exact linear oracle returns a minimizer of
 $\langle v,x\rangle$ over $x\in\X$, and the Euclidean projection
 $\Pi_\Y(v)$ is available.
@@ -212,8 +217,7 @@ c_i(x)&\ge h_i(x)
 &=c_i(y)+\langle k_i(y),x-y\rangle.
 \end{aligned}
 \end{equation}
-The inequalities use $c_i\ge h_i$ and the subgradient inequality for
-$h_i$. If $h_i(y)\le0$, including $h_i(y)=0$, then $c_i(y)=0$ is a
+If $h_i(y)\le0$, including $h_i(y)=0$, then $c_i(y)=0$ is a
 global minimum of $c_i$, so the choice $k_i(y)=0$ is a subgradient.
 Thus $k_i(y)\in\partial c_i(y)$ in both cases. Its norm bounds in
 \eqref{eq:ch4-cb-clipped-oracles} follow from
@@ -255,7 +259,7 @@ Finally, for $x,y\in\Real^n$ and $0\le\lambda\le1$,
 \end{aligned}
 \end{equation}
 Here (A) uses convexity and nonnegativity of each $c_i$ and monotonicity
-of the squared norm on the nonnegative orthant; (B) uses convexity of the
+of the squared norm on the nonnegative orthant. Step (B) uses convexity of the
 squared norm.
 \end{proof}
 
@@ -271,9 +275,7 @@ linearized clipped constraints.
 
 Let $T\ge1$ be an integer query budget for each oracle. We count a full
 constraint-vector evaluation as one query and a joint evaluation of the
-objective and constraint subgradients as one subgradient query. Oracle
-counts are reported separately by type, including any linear-oracle call
-used to obtain the initial point.
+objective and constraint subgradients as one subgradient query.
 For problem \eqref{eq:ch4-cb-problem}, use the update coefficients
 \begin{equation}\label{eq:ch4-cb-tuning}
 a\coloneqq\frac{2L\sqrt T}{D},\qquad
@@ -315,8 +317,8 @@ Equations~\eqref{eq:ch4-cb-clipped-constraints},
 w_t\ge0,\qquad c(y_t)\ge0,\qquad w_t+c(y_t)\ge0.
 \end{equation}
 
-The method returns $\bar x_T$, defined below. We denote its
-objective gap and constraint violation by $\Delta_T$ and $V_T$:
+The method returns the average $\bar x_T$, with objective gap $\Delta_T$
+and constraint violation $V_T$:
 \begin{equation}\label{eq:ch4-cb-output}
 \begin{gathered}
 \bar x_T\coloneqq\frac1T\sum_{t=1}^Tx_t,\\
@@ -326,13 +328,14 @@ V_T\coloneqq\|c(\bar x_T)\|=\|[h(\bar x_T)]_+\|.
 \end{equation}
 
 Convexity of $\X$ ensures that $\bar x_T\in\X$. The functional
-constraints need not hold exactly at this average; their violation is
+constraints need not hold exactly at this average. Their violation is
 measured by $V_T$. The objective gap $\Delta_T$ can therefore be negative
 when the output is infeasible.
 
 Algorithm~\ref{alg:functional} collects
 \eqref{eq:ch4-cb-tuning}--\eqref{eq:ch4-cb-output}.
 \begin{algorithm}[H]
+\setstretch{1}
 \caption{Projection-free method with functional constraints}
 \label{alg:functional}
 \begin{algorithmic}[1]
@@ -368,9 +371,9 @@ $[-c(y_{t+1})]_+$ in its multiplier update is also zero. This gives
 The tuning in \eqref{eq:ch4-cb-tuning} sets $a=2G^2\beta>0$,
 corresponding to $\alpha=0$ in the published notation. Although the
 published analysis requires a separate positive $\alpha$, the proof in
-Section~\ref{sec:ch4-cb-proof} bounds the objective-subgradient term by
-$L\|y_{t+1}-y_t\|-(a/4)\|y_{t+1}-y_t\|^2\le L^2/a$;
-see \eqref{eq:ch4-cb-square-bound} and \eqref{eq:ch4-cb-one-step}.
+Section~\ref{sec:ch4-cb-proof} bounds the term involving the objective subgradient by
+$L\|y_{t+1}-y_t\|-(a/4)\|y_{t+1}-y_t\|^2\le L^2/a$.
+See \eqref{eq:ch4-cb-square-bound} and \eqref{eq:ch4-cb-one-step}.
 Thus the proof covers this parameter choice.
 
 \section{Convergence analysis}
@@ -389,8 +392,7 @@ The multiplier $\mu$ is not an algorithm input.
 \end{Thm:Assumption}
 Assumption~\ref{assum:Lagrange multiplier} supplies the multiplier used in
 the constraint violation bound and the objective lower bound in
-\eqref{eq:ch4-cb-violation-theorem}. A sufficient condition for
-Assumption~\ref{assum:Lagrange multiplier} is the existence of
+\eqref{eq:ch4-cb-violation-theorem}. A sufficient condition is the existence of
 $x^\circ\in\operatorname{relint}\X$ with $h_i(x^\circ)<0$ for every
 $i=1,\ldots,m$ \cite{boyd_vandenberghe_2004}.
 
@@ -417,24 +419,7 @@ V_T\le\frac{4GD}{\sqrt T}\left(1+\frac{G\|\mu\|}{L}\right),
 \postdisplaypenalty=10000
 \interlinepenalty=10000
 
-The primal and multiplier estimates give a telescoping bound on the
-objective gap plus squared constraint violation at the query points.
-The equality multiplier controls the distance between the query-point
-average and the returned average, allowing this bound to be transferred
-to the returned point in $\X$. The final step uses
-Assumption~\ref{assum:Lagrange multiplier} to obtain a separate
-constraint-violation bound.
-
-\par\medskip\noindent\textbf{The inequality multiplier.}
-For $t=1,\ldots,T-1$, write the query-point increment and the
-parameter identities from \eqref{eq:ch4-cb-tuning} as
-\begin{equation}\label{eq:ch4-cb-proof-notation}
-\begin{gathered}
-u_t\coloneqq y_{t+1}-y_t,\\
-a=2\beta G^2=\eta T=\frac{2L\sqrt T}{D}.
-\end{gathered}
-\end{equation}
-For $v\in\Real^n$, \eqref{eq:ch4-cb-oracle-data} gives
+For $t=1,\ldots,T-1$ and $v\in\Real^n$, \eqref{eq:ch4-cb-oracle-data} gives
 \begin{equation}\label{eq:ch4-cb-jacobian-bound}
 \begin{aligned}
 \|K_tv\|^2
@@ -450,62 +435,39 @@ Here (A) is Cauchy--Schwarz, (B) uses
 \eqref{eq:ch4-cb-clipped-oracles}, and (C) applies the subgradient inequality
 to each $c_i$, using $k_i(y_t)\in\partial c_i(y_t)$ from
 \eqref{eq:ch4-cb-clipped-oracles}.
-The final equality uses \eqref{eq:ch4-cb-domain} and
-\eqref{eq:ch4-cb-clipped-zero-violation-set}.
 
-Expanding the inequality-multiplier update
-\eqref{eq:ch4-cb-multiplier-updates} gives
-\begin{equation}\label{eq:ch4-cb-W-drift}
-\begin{aligned}
-&\frac{\|w_{t+1}\|^2-\|w_t\|^2}{2}\\
-&\quad=\frac12\|[w_t+\widehat c_t(y_{t+1})]_+\|^2-\frac12\|w_t\|^2\\
-&\quad\overset{\mathrm{(A)}}{\le}
-\frac12\|w_t+\widehat c_t(y_{t+1})\|^2-\frac12\|w_t\|^2\\
-&\quad=w_t^\top\widehat c_t(y_{t+1})+\frac12\|c(y_t)+K_tu_t\|^2\\
-&\quad=(w_t+c(y_t))^\top\widehat c_t(y_{t+1})
--\frac12\|c(y_t)\|^2+\frac12\|K_tu_t\|^2\\
-&\quad\overset{\mathrm{(B)}}{\le}(w_t+c(y_t))^\top\widehat c_t(y_{t+1})
--\frac12\|c(y_t)\|^2+\frac{G^2}{2}\|u_t\|^2.
-\end{aligned}
-\end{equation}
-\nopagebreak[3]
-Here (A) uses $\|[v]_+\|\le\|v\|$; (B) uses
-\eqref{eq:ch4-cb-jacobian-bound}.
-The equalities use $\widehat c_t(y_{t+1})=c(y_t)+K_tu_t$.
-Multiplying by $\beta>0$ and rearranging gives
+By \eqref{eq:ch4-cb-affine-model} and \eqref{eq:ch4-cb-multiplier-updates},
 \begin{equation}\label{eq:ch4-cb-constraint-work}
 \begin{aligned}
 &\beta(w_t+c(y_t))^\top\widehat c_t(y_{t+1})\\
-&\quad\ge\frac\beta2\bigl(\|w_{t+1}\|^2-\|w_t\|^2\bigr)
-+\frac\beta2\|c(y_t)\|^2-\frac{\beta G^2}{2}\|u_t\|^2.
+&\quad=\beta w_t^\top\widehat c_t(y_{t+1})
++\frac\beta2\bigl(\|\widehat c_t(y_{t+1})\|^2+\|c(y_t)\|^2-\|K_t(y_{t+1}-y_t)\|^2\bigr)\\
+&\quad=\frac\beta2\bigl(\|w_t+\widehat c_t(y_{t+1})\|^2-\|w_t\|^2
++\|c(y_t)\|^2-\|K_t(y_{t+1}-y_t)\|^2\bigr)\\
+&\quad\overset{\mathrm{(A)}}{\ge}
+\frac\beta2\bigl(\|[w_t+\widehat c_t(y_{t+1})]_+\|^2-\|w_t\|^2
++\|c(y_t)\|^2-\|K_t(y_{t+1}-y_t)\|^2\bigr)\\
+&\quad=\frac\beta2\bigl(\|w_{t+1}\|^2-\|w_t\|^2
++\|c(y_t)\|^2-\|K_t(y_{t+1}-y_t)\|^2\bigr)\\
+&\quad\overset{\mathrm{(B)}}{\ge}
+\frac\beta2\bigl(\|w_{t+1}\|^2-\|w_t\|^2+\|c(y_t)\|^2\bigr)
+-\frac{\beta G^2}{2}\|y_{t+1}-y_t\|^2.
 \end{aligned}
 \end{equation}
+\nopagebreak[3]
+Here (A) uses \eqref{eq:intro:positive-part-norm}. Step (B) uses
+\eqref{eq:ch4-cb-jacobian-bound}.
 
-\par\medskip\noindent\textbf{The primal update.}
-Completing the square in \eqref{eq:ch4-cb-primal-update} gives
-\begin{equation}\label{eq:ch4-cb-primal-minimization}
-\begin{aligned}
-y_{t+1}=\arg\min_{y\in\Y}\biggl\{
-&\langle s_t+\beta K_t^\top(w_t+c(y_t))-q_t,y\rangle\\
-&+\frac\eta2\|y-x_{t+1}\|^2+\frac a2\|y-y_t\|^2\biggr\}.
-\end{aligned}
-\end{equation}
-Apply \eqref{eq:pushback} in the Euclidean geometry
-\eqref{eq:intro:quadratic-geometry}, with ambient space $\Real^n$,
-feasible set $\Y$, reference point $y_t$,
-coefficient $a$, and comparison point $x^*$. The convex function used in
-\eqref{eq:pushback} is
-\[
-\psi_t(y)\coloneqq\langle s_t+\beta K_t^\top(w_t+c(y_t))-q_t,y\rangle
-+\frac\eta2\|y-x_{t+1}\|^2.
-\]
-Expanding \eqref{eq:pushback} gives
+The projection condition \eqref{eq:intro:projection-optimality} gives
 \begin{equation}\label{eq:ch4-cb-quadratic-comparison}
 \begin{aligned}
 &\langle s_t+\beta K_t^\top(w_t+c(y_t))-q_t,y_{t+1}-x^*\rangle\\
-&\quad+\frac\eta2\|y_{t+1}-x_{t+1}\|^2+\frac a2\|u_t\|^2\\
+&\quad+\frac\eta2\|y_{t+1}-x_{t+1}\|^2+\frac a2\|y_{t+1}-y_t\|^2\\
 &\quad\overset{\mathrm{(A)}}{\le}
-\frac\eta2\|x_{t+1}-x^*\|^2
+-a\langle y_{t+1}-y_t,y_{t+1}-x^*\rangle
+-\eta\langle y_{t+1}-x_{t+1},y_{t+1}-x^*\rangle\\
+&\qquad+\frac\eta2\|y_{t+1}-x_{t+1}\|^2+\frac a2\|y_{t+1}-y_t\|^2\\
+&\quad=\frac\eta2\bigl(\|x_{t+1}-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)
 +\frac a2\bigl(\|y_t-x^*\|^2-\|y_{t+1}-x^*\|^2\bigr)\\
 &\quad\overset{\mathrm{(B)}}{\le}
 \frac{\eta D^2}{2}
@@ -513,8 +475,9 @@ Expanding \eqref{eq:pushback} gives
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-Here (A) is \eqref{eq:pushback} applied to
-\eqref{eq:ch4-cb-primal-minimization}; (B) uses \eqref{eq:ch4-cb-domain}.
+Here (A) applies \eqref{eq:intro:projection-optimality} to
+\eqref{eq:ch4-cb-primal-update} with comparison point $x^*$.
+Step (B) uses \eqref{eq:ch4-cb-domain}.
 
 For the $q_t$ terms,
 \begin{equation}\label{eq:ch4-cb-equality-identity}
@@ -532,28 +495,24 @@ For the $q_t$ terms,
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-The equalities expand the square and use
-\eqref{eq:ch4-cb-multiplier-updates}; (A) uses
-\eqref{eq:ch4-cb-linear-oracle}.
+Step (A) uses \eqref{eq:ch4-cb-linear-oracle}.
 
 Also,
 \begin{equation}\label{eq:ch4-cb-subgradient-comparison}
 \begin{aligned}
 &\langle s_t,y_{t+1}-x^*\rangle\\
-&\quad=\langle s_t,y_t-x^*\rangle+\langle s_t,u_t\rangle\\
-&\quad\overset{\mathrm{(A)}}{\ge}f(y_t)-f^*+\langle s_t,u_t\rangle\\
-&\quad\overset{\mathrm{(B)}}{\ge}f(y_t)-f^*-L\|u_t\|,\\
+&\quad=\langle s_t,y_t-x^*\rangle+\langle s_t,y_{t+1}-y_t\rangle\\
+&\quad\overset{\mathrm{(A)}}{\ge}f(y_t)-f^*+\langle s_t,y_{t+1}-y_t\rangle\\
+&\quad\overset{\mathrm{(B)}}{\ge}f(y_t)-f^*-L\|y_{t+1}-y_t\|,\\
 &(w_t+c(y_t))^\top K_t(y_{t+1}-x^*)\\
 &\quad=(w_t+c(y_t))^\top\bigl(\widehat c_t(y_{t+1})-\widehat c_t(x^*)\bigr)\\
 &\quad\overset{\mathrm{(C)}}{\ge}(w_t+c(y_t))^\top\widehat c_t(y_{t+1}).
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-The equalities use \eqref{eq:ch4-cb-affine-model} and
-\eqref{eq:ch4-cb-proof-notation}.
 Here (A) is the subgradient inequality with $f(x^*)=f^*$ from
-\eqref{eq:ch4-cb-domain}; (B) is Cauchy--Schwarz with
-\eqref{eq:ch4-cb-oracles}; (C) uses
+\eqref{eq:ch4-cb-domain}. Step (B) is Cauchy--Schwarz with
+\eqref{eq:ch4-cb-oracles}. Step (C) uses
 \eqref{eq:ch4-cb-nonnegative-weights} and
 \eqref{eq:ch4-cb-jacobian-bound}.
 
@@ -565,11 +524,22 @@ into \eqref{eq:ch4-cb-quadratic-comparison} gives
 &f(y_t)-f^*+\beta(w_t+c(y_t))^\top\widehat c_t(y_{t+1})\\
 &\quad+\frac a2\bigl(\|y_{t+1}-x^*\|^2-\|y_t-x^*\|^2\bigr)\\
 &\quad+\frac{\|q_{t+1}\|^2-\|q_t\|^2}{2\eta}
-+\frac a2\|u_t\|^2
-\le\frac{\eta D^2}{2}+L\|u_t\|.
++\frac a2\|y_{t+1}-y_t\|^2\\
+&\quad\le\frac{\eta D^2}{2}+L\|y_{t+1}-y_t\|.
 \end{aligned}
 \end{equation}
 
+For $r\ge0$,
+\begin{equation}\label{eq:ch4-cb-square-bound}
+Lr-\frac a4r^2
+=\frac{L^2}{a}-\frac a4\left(r-\frac{2L}{a}\right)^2
+\le\frac{L^2}{a}.
+\end{equation}
+
+By \eqref{eq:ch4-cb-tuning},
+\begin{equation}\label{eq:ch4-cb-proof-notation}
+a=2\beta G^2=\eta T=\frac{2L\sqrt T}{D}.
+\end{equation}
 Define
 \begin{equation}\label{eq:ch4-cb-F-definition}
 \begin{aligned}
@@ -577,24 +547,13 @@ F(y)&\coloneqq f(y)-f^*+\frac\beta2\|c(y)\|^2,\\
 E_t&\coloneqq\frac a2\|y_t-x^*\|^2+\frac{\|q_t\|^2}{2\eta}+\frac\beta2\|w_t\|^2.
 \end{aligned}
 \end{equation}
-The function $F$ is convex by \eqref{eq:ch4-cb-squared-violation-convexity}
-and convexity of $f$. For $r\ge0$,
-\begin{equation}\label{eq:ch4-cb-square-bound}
-Lr-\frac a4r^2
-=\frac{L^2}{a}-\frac a4\left(r-\frac{2L}{a}\right)^2
-\overset{\mathrm{(A)}}{\le}\frac{L^2}{a}.
-\end{equation}
-\nopagebreak[3]
-Here (A) drops the nonpositive term
-$-(a/4)(r-2L/a)^2$.
-
 Using \eqref{eq:ch4-cb-F-definition},
 \begin{equation}\label{eq:ch4-cb-one-step}
 \begin{aligned}
 F(y_t)+E_{t+1}-E_t
 &\overset{\mathrm{(A)}}{\le}
-\frac{\eta D^2}{2}+L\|u_t\|-\frac{a-\beta G^2}{2}\|u_t\|^2\\
-&=\frac{\eta D^2}{2}+L\|u_t\|-\frac a4\|u_t\|^2
+\frac{\eta D^2}{2}+L\|y_{t+1}-y_t\|-\frac{a-\beta G^2}{2}\|y_{t+1}-y_t\|^2\\
+&=\frac{\eta D^2}{2}+L\|y_{t+1}-y_t\|-\frac a4\|y_{t+1}-y_t\|^2
 \\&\overset{\mathrm{(B)}}{\le}\frac{\eta D^2}{2}+\frac{L^2}{a}.
 \end{aligned}
 \end{equation}
@@ -602,13 +561,9 @@ F(y_t)+E_{t+1}-E_t
 Here (A) substitutes \eqref{eq:ch4-cb-constraint-work} into
 \eqref{eq:ch4-cb-primal-comparison}, using
 \eqref{eq:ch4-cb-F-definition}.
-The equality uses $a=2\beta G^2$ from
-\eqref{eq:ch4-cb-proof-notation}; (B) is
-\eqref{eq:ch4-cb-square-bound} at $r=\|u_t\|$.
+Step (B) is \eqref{eq:ch4-cb-square-bound} at $r=\|y_{t+1}-y_t\|$.
 
-\par\medskip\noindent\textbf{Summation.}
-When $T=1$, the algorithm performs no updates; sums over
-$t=1,\ldots,T-1$ are empty and equal zero.
+For $T=1$, the sums over $t=1,\ldots,T-1$ are empty.
 By \eqref{eq:ch4-cb-F-definition} and \eqref{eq:ch4-cb-init},
 \begin{equation}\label{eq:ch4-cb-summed-comparison}
 \begin{aligned}
@@ -622,7 +577,7 @@ By \eqref{eq:ch4-cb-F-definition} and \eqref{eq:ch4-cb-init},
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-Here (A) sums \eqref{eq:ch4-cb-one-step}; (B) uses
+Here (A) sums \eqref{eq:ch4-cb-one-step}. Step (B) uses
 $y_1=x_1\in\X$ from \eqref{eq:ch4-cb-init} and
 the diameter bound in \eqref{eq:ch4-cb-domain}.
 
@@ -640,10 +595,9 @@ L\|y_T-x^*\|+\frac{\beta G^2}{2}\|y_T-x^*\|^2\\
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-The equalities use the definition of $F$ and $\beta G^2=a/2$.
 Here (A) uses the Lipschitz bounds
-\eqref{eq:ch4-cb-scalar-lipschitz}--\eqref{eq:ch4-cb-lipschitz};
-(B) is \eqref{eq:ch4-cb-square-bound} at $r=\|y_T-x^*\|$.
+\eqref{eq:ch4-cb-scalar-lipschitz}--\eqref{eq:ch4-cb-lipschitz}.
+Step (B) is \eqref{eq:ch4-cb-square-bound} at $r=\|y_T-x^*\|$.
 
 Consequently,
 \begin{equation}\label{eq:ch4-cb-full-sum}
@@ -656,17 +610,13 @@ Consequently,
 &\quad\overset{\mathrm{(B)}}{\le}
 \frac{aD^2}{2}+\frac{(T-1)\eta D^2}{2}+\frac{TL^2}{a}\\
 &\quad=LD\sqrt T+\frac{(T-1)LD}{\sqrt T}+\frac{LD\sqrt T}{2}
-\overset{\mathrm{(C)}}{\le}\frac52LD\sqrt T.
+\le\frac52LD\sqrt T.
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-The equalities use \eqref{eq:ch4-cb-F-definition} and
-\eqref{eq:ch4-cb-tuning}, respectively.
-Here (A) uses \eqref{eq:ch4-cb-terminal-F-bound} and drops
-$-\beta\|w_T\|^2/2$; (B) uses \eqref{eq:ch4-cb-summed-comparison};
-(C) uses $T-1\le T$.
+Here (A) uses \eqref{eq:ch4-cb-terminal-F-bound}, and (B) uses
+\eqref{eq:ch4-cb-summed-comparison}.
 
-\par\medskip\noindent\textbf{The returned point.}
 By \eqref{eq:ch4-cb-init} and \eqref{eq:ch4-cb-multiplier-updates},
 \begin{equation}\label{eq:ch4-cb-average-identity}
 \begin{aligned}
@@ -678,9 +628,9 @@ q_T&=\eta\sum_{t=1}^{T-1}(x_{t+1}-y_{t+1})\\
 \frac{\|q_T\|^2}{2\eta T}&=\frac{\eta T}{2}r_T^2=\frac a2r_T^2.
 \end{aligned}
 \end{equation}
-The last equality uses $a=\eta T$ from
-\eqref{eq:ch4-cb-proof-notation}.
 
+The function $F$ is convex by \eqref{eq:ch4-cb-squared-violation-convexity}
+and convexity of $f$.
 Convexity gives $\bar x_T\in\X$ and $\bar y_T\in\Y$. Hence
 \begin{equation}\label{eq:ch4-cb-average-bound}
 \begin{aligned}
@@ -692,9 +642,8 @@ F(\bar y_T)+\frac a2r_T^2
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-The equality is \eqref{eq:ch4-cb-average-identity};
-(A) applies Jensen's inequality to the convex function $F$ defined in
-\eqref{eq:ch4-cb-F-definition}; (B) divides
+Step (A) applies Jensen's inequality to the convex function $F$ defined in
+\eqref{eq:ch4-cb-F-definition}. Step (B) divides
 \eqref{eq:ch4-cb-full-sum} by $T$.
 
 By \eqref{eq:ch4-cb-output} and \eqref{eq:ch4-cb-average-identity},
@@ -734,24 +683,16 @@ F(\bar y_T)+\frac a2r_T^2+\frac{L^2}{a}\\
 Here (A) uses \eqref{eq:ch4-cb-output-comparisons}, (B) bounds the square
 of a sum by twice the sum of the squares, (C) is \eqref{eq:ch4-cb-square-bound}
 at $r=r_T$, and (D) is \eqref{eq:ch4-cb-average-bound}.
-The first equality uses \eqref{eq:ch4-cb-F-definition} and
-$a=2\beta G^2$ from \eqref{eq:ch4-cb-proof-notation};
-the final substitution uses \eqref{eq:ch4-cb-tuning}.
 
-Hence
+By \eqref{eq:ch4-cb-joint-transfer},
 \[
 \frac{\Delta_T}{LD}
 +\frac{\sqrt T}{4}\left(\frac{V_T}{GD}\right)^2
 =\frac{\Delta_T+\beta V_T^2/4}{LD}
-\overset{\mathrm{(A)}}{\le}\frac3{\sqrt T}.
+\le\frac3{\sqrt T}.
 \]
-\nopagebreak[3]
-The equality uses \eqref{eq:ch4-cb-tuning}; (A) divides
-\eqref{eq:ch4-cb-joint-transfer} by $LD$.
-This proves \eqref{eq:ch4-cb-theorem}; its objective upper bound
-follows by dropping the nonnegative squared term.
+This proves \eqref{eq:ch4-cb-theorem}.
 
-\par\medskip\noindent\textbf{Constraint violation.}
 Under Assumption~\ref{assum:Lagrange multiplier},
 \begin{equation}\label{eq:ch4-cb-dual-lower-bound}
 \Delta_T
@@ -760,49 +701,46 @@ Under Assumption~\ref{assum:Lagrange multiplier},
 \overset{\mathrm{(C)}}{\ge}-\|\mu\|V_T.
 \end{equation}
 \nopagebreak[3]
-Here (A) is \eqref{eq:ch4-cb-multiplier} at $\bar x_T\in\X$,
-(B) uses $\mu\ge0$ and \eqref{eq:ch4-cb-clipped-constraints};
-(C) is Cauchy--Schwarz with
+Here (A) is \eqref{eq:ch4-cb-multiplier} at $\bar x_T\in\X$.
+Step (B) uses $\mu\ge0$ and \eqref{eq:ch4-cb-clipped-constraints}.
+Step (C) is Cauchy--Schwarz with
 \eqref{eq:ch4-cb-output}.
 
-Combining the joint objective and constraint violation bound
-\eqref{eq:ch4-cb-joint-transfer} with the objective lower bound
-\eqref{eq:ch4-cb-dual-lower-bound} gives
+By \eqref{eq:ch4-cb-tuning},
 \begin{equation}\label{eq:ch4-cb-violation-quadratic}
 \begin{aligned}
-&V_T\left(\frac{\sqrt T\,V_T}{4GD}-\frac{G\|\mu\|}{L}\right)\\
-&\quad=\frac GL\left(\frac\beta4V_T^2-\|\mu\|V_T\right)\\
-&\quad\overset{\mathrm{(A)}}{\le}\frac GL\left(\frac\beta4V_T^2+\Delta_T\right)
-\overset{\mathrm{(B)}}{\le}\frac{3GD}{\sqrt T}.
+\left(\frac{\sqrt T\,V_T}{2GD}-\frac{G\|\mu\|}{L}\right)^2
+&=\left(\frac{G\|\mu\|}{L}\right)^2
++\frac{\sqrt T}{LD}\left(\frac\beta4V_T^2-\|\mu\|V_T\right)\\
+&\overset{\mathrm{(A)}}{\le}\left(\frac{G\|\mu\|}{L}\right)^2
++\frac{\sqrt T}{LD}\left(\frac\beta4V_T^2+\Delta_T\right)\\
+&\overset{\mathrm{(B)}}{\le}\left(\frac{G\|\mu\|}{L}\right)^2+3.
 \end{aligned}
 \end{equation}
 \nopagebreak[3]
-The equality uses \eqref{eq:ch4-cb-tuning}; (A) uses
-\eqref{eq:ch4-cb-dual-lower-bound}, and (B) uses
+Step (A) uses \eqref{eq:ch4-cb-dual-lower-bound}, and (B) uses
 \eqref{eq:ch4-cb-joint-transfer}.
-\par\Needspace{5\baselineskip}
-Suppose, for contradiction, that
+Therefore,
 \[
-V_T\ge\frac{4GD}{\sqrt T}\left(1+\frac{G\|\mu\|}{L}\right).
-\]
-Then
-\[
-\frac{\sqrt T\,V_T}{4GD}-\frac{G\|\mu\|}{L}
-\ge\left(1+\frac{G\|\mu\|}{L}\right)-\frac{G\|\mu\|}{L}
-=1.
-\]
-Since $V_T\ge0$, \eqref{eq:ch4-cb-violation-quadratic} therefore gives
-\[
+\begin{aligned}
 V_T
-\le V_T\left(\frac{\sqrt T\,V_T}{4GD}-\frac{G\|\mu\|}{L}\right)
-\le\frac{3GD}{\sqrt T}.
+&\overset{\mathrm{(A)}}{\le}\frac{2GD}{\sqrt T}
+\left[\frac{G\|\mu\|}{L}
++\sqrt{\left(\frac{G\|\mu\|}{L}\right)^2+3}\right]\\
+&\overset{\mathrm{(B)}}{\le}\frac{4GD}{\sqrt T}
+\left(1+\frac{G\|\mu\|}{L}\right).
+\end{aligned}
 \]
-The upper bound $V_T\le3GD/\sqrt T$ contradicts the supposition
-$V_T\ge(4GD/\sqrt T)(1+G\|\mu\|/L)\ge4GD/\sqrt T$.
-This proves the violation bound in \eqref{eq:ch4-cb-violation-theorem}.
-The lower bound $\Delta_T\ge-\|\mu\|V_T$ follows from
-\eqref{eq:ch4-cb-dual-lower-bound}, and the upper bound
-$\Delta_T\le3LD/\sqrt T$ follows from \eqref{eq:ch4-cb-theorem}.
+\nopagebreak[3]
+Here (A) follows from \eqref{eq:ch4-cb-violation-quadratic}, and (B) uses
+\[
+\left(\frac{G\|\mu\|}{L}+2\right)^2
+-\left[\left(\frac{G\|\mu\|}{L}\right)^2+3\right]
+=\frac{4G\|\mu\|}{L}+1\ge0.
+\]
+Together with \eqref{eq:ch4-cb-dual-lower-bound} and the objective upper
+bound in \eqref{eq:ch4-cb-theorem}, this proves
+\eqref{eq:ch4-cb-violation-theorem}.
 \end{proof}
 
 \begin{Thm:Corollary}[Oracle complexity]\label{cor:ch4-cb-iteration-complexity}
@@ -830,12 +768,11 @@ Theorem~\ref{thm:ch4-cb-guarantee} proves both claims.
 Using linear optimization over $\X$ and projection onto the auxiliary
 set $\Y$, the method returns a point with objective gap at most
 $3LD/\sqrt T$ by~\eqref{eq:ch4-cb-theorem}. This bound is computable from
-the known constants, and all update coefficients depend only on the
-query budget $T$ and the bounds $D,L,G$.
+the known constants.
 
 Under Assumption~\ref{assum:Lagrange multiplier}, the constraint violation
-norm also has an $O(T^{-1/2})$ upper bound. Evaluating this theoretical
-bound in \eqref{eq:ch4-cb-violation-theorem} requires a known constant
+norm also has an $O(T^{-1/2})$ upper bound. Computing the bound in
+\eqref{eq:ch4-cb-violation-theorem} requires a known constant
 $M\ge\|\mu\|$ for a multiplier $\mu$ satisfying
 \eqref{eq:ch4-cb-multiplier}. The returned point's violation can also be
 checked by evaluating $h(\bar x_T)$. Unless its value is already

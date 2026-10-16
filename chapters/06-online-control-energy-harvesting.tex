@@ -9,12 +9,9 @@ I formulated the storage-control problem, developed the SDAC policy class
 and the original algorithm, and wrote most of the original proofs of the
 scalar upper bounds. Neely reviewed the original manuscript and proofs.
 
-
-I used ChatGPT to refine and reorganize my proofs,
-improve their presentation, and obtain improvements to constants and
-proof arguments. The lower-bound construction and proofs in
+The lower-bound construction and proofs in
 Section~\ref{ch4:sec:regret-lower-bound} were developed primarily using
-ChatGPT (5.6 sol), as disclosed in the source manuscript.
+\mbox{ChatGPT}, as disclosed in the source manuscript.
 
 \section{Introduction}
 \label{ch4:sec:introduction}
@@ -24,7 +21,7 @@ stochastic energy arrivals in $[0,1]$ and a fixed-action benchmark. Here,
 arrivals may follow any sequence in $[0,1]$, each action is selected before
 the current arrival is observed, and convex costs may depend jointly on
 storage and allocation. Each fixed comparator policy is evaluated on its
-own storage trajectory; its actions may vary with the arrival history.
+own storage trajectory. Its actions may vary with the arrival history.
 
 The scalar model has storage decay and enough capacity to avoid saturation.
 A \emph{Simplex Disturbance-Action Control} (SDAC) policy assigns
@@ -75,7 +72,7 @@ Sections~\ref{ch4:sec:scalar} and~\ref{ch4:sec:scalar-performance}
 give the controller and its finite- and infinite-memory guarantees.
 Section~\ref{ch4:sec:regret-lower-bound} gives the lower bound and compares
 its parameter dependence with the upper bound.
-The appendix proves the projection interpretation of action clipping.
+Section~\ref{ch4:subsec:scalar-entropy} proves the projection interpretation of action clipping.
 
 \subsection{Related work}
 \label{ch4:sec:related-work}
@@ -107,8 +104,8 @@ the only feasible allocation is zero.
 
 Liu et al.\ \cite{liu2023constrainedControl} allow convex constraints
 involving both the state and the action. They bound accumulated violation
-for changing constraints and violation at each round for fixed constraints;
-projection can satisfy fixed affine constraints exactly
+for changing constraints and violation at each round for fixed constraints.
+Projection can satisfy fixed affine constraints exactly
 \cite[Table~1]{liu2023constrainedControl}. Our constraint is fixed and
 affine. Fixed SDAC policies and the clipping
 rule~\eqref{ch4:eq:alg-feasible-action} satisfy it exactly.
@@ -141,8 +138,8 @@ between recharges. Zibaeenejad and Chen \cite{zibaeenejad2019lookahead}
 derive an optimal policy under Bernoulli arrivals with advance knowledge
 of a fixed number of future arrivals. The policy uses a decreasing
 allocation sequence when none of those arrivals recharges the battery.
-These policies and SDAC both distribute arrivals across future allocations;
-the exact inclusion in
+These policies and SDAC both distribute arrivals across future allocations.
+The exact inclusion in
 Corollary~\ref{ch4:cor:fraction-as-sdac} concerns feasible fixed-fraction
 policies under the chapter's own dynamics.
 
@@ -152,17 +149,19 @@ Their journal version allows conditions other than energy arrivals to be
 correlated over time and to have changing distributions, while energy
 arrivals are independent and have a common mean
 \cite[Sec.~V, Thm.~4]{Yu2019}. Asgari and Neely \cite{10.1145/3428337}
-obtain expected regret $O(\sqrt{T})$ with battery capacity $O(\sqrt{T})$
-for fixed dimension, under i.i.d.\ energy arrivals and arbitrary convex
-losses, provided each loss function is independent of the energy arrival
-in the same round. Both papers compare expected performance against
+report expected regret $O(\sqrt{T})$ with battery capacity $O(\sqrt{T})$
+for fixed dimension, with i.i.d.\ energy arrivals and time-varying convex
+losses under their stated independence assumptions.
+Chapter~\ref{Section:ChapEnergyharvest} makes the conditional-mean
+condition~\eqref{eq:energy:conditional-mean} explicit for history-dependent
+costs. Both papers compare expected performance against
 constant allocations whose total energy use per round does not exceed the
 mean energy arrival. These comparison allocations need not satisfy the
 battery constraint on every realized arrival sequence. Neither objective
 depends directly on the battery state.
 Lin et al.\ \cite{lin2025optimal} allow
-arbitrary energy arrivals and changing objectives that measure how up to
-date the received information is. They observe the current arrival and
+arbitrary energy arrivals and changing objectives that measure the freshness
+of received information. They observe the current arrival and
 reward function before allocation. They bound the worst-case ratio between
 the optimal reward with the entire input sequence known in advance and
 their controller's reward, under the same battery-capacity and
@@ -182,7 +181,7 @@ long-run expected average cost exceeds the optimal value. Kim et al.\
 loses energy over time. They give competitive guarantees for the value of
 meeting demand minus production cost. Their guarantee including production
 costs assumes shared storage and advance knowledge of demands. These
-papers bound long-run average cost or ratios of total performance; this
+papers bound long-run average cost or ratios of total performance. This
 chapter bounds the cumulative cost difference relative to the best fixed
 policy chosen in hindsight.
 
@@ -197,12 +196,11 @@ Khojastepour and Sabharwal \cite{khojastepour2004delay} study schedulers
 that split each arrival among service times within a maximum delay. For
 their class with fixed allocation fractions, the service rate is a fixed
 weighted sum of current and past arrivals. The fractions are nonnegative
-and sum to one; SDAC permits their sum to be at most one. Under i.i.d.\
+and sum to one. SDAC permits their sum to be at most one. Under i.i.d.\
 arrivals, spreading each arrival equally across the allowed service slots
 minimizes long-run average transmit power over a Gaussian channel within
-this fixed-weight class. The shared structure is the use of nonnegative
-weights on arrivals; their objective is long-run average power under a
-fixed cost function.
+this class of policies with fixed allocation fractions. Their objective
+uses a fixed cost function.
 
 \paragraph{Inventory and reservoir management}
 Yang et al.\ \cite{yang2020online} study purchasing to meet demand under
@@ -219,7 +217,7 @@ at least a fixed positive amount. Hihat and Fermanian
 replenishment targets for more general inventory dynamics, without a
 regret guarantee for that method. Classical reservoir models study how
 random inflows and prescribed release rules determine the long-run
-distribution of stored water \cite{moran1954dams}.
+distribution of stored water \cite{moran1956continuous}.
 
 \section{Model, policies, and algorithm}
 \label{ch4:sec:scalar}
@@ -268,8 +266,7 @@ $0\le x_{t+1}\le\alpha x_t+1$. Iterating from
 \le\frac{1}{1-\alpha},
 \qquad t\in[T+1].
 \end{equation}
-The sum is empty at $t=1$; the geometric-series identity and final bound
-use $0<\alpha<1$.
+The sum is empty at $t=1$.
 Together with \eqref{ch4:eq:model-feasibility}, this bound places every feasible
 state--action pair in the compact set
 \begin{equation}
@@ -320,7 +317,7 @@ satisfying
 \end{equation}
 These subgradient bounds hold, for example, when $c_t$ has a convex
 extension to an open neighborhood of $\mathcal{D}_\alpha$ satisfying
-\eqref{ch4:eq:model-lipschitz}; see
+\eqref{ch4:eq:model-lipschitz}. See
 \cite[Thm.~9.13]{rockafellar1998variational}.
 
 We use $x_t$ and $u_t$ without parameter arguments for the trajectory generated by
@@ -377,11 +374,10 @@ of filter coefficients.
 
 An unrestricted filter can request a negative allocation or more than
 $\alpha x_t$. SDAC restricts the coefficients so that each fixed policy is
-feasible and its surrogate costs are convex. The entropic update has the
-closed form in \eqref{ch4:eq:alg-omd-mult}--\eqref{ch4:eq:alg-omd-proj}.
+feasible and its surrogate costs are convex.
 
 
-Fix a memory length $H\in\mathbb{N}_{>0}$ and define the subprobability simplex
+Define the subprobability simplex
 \begin{equation}
 \label{ch4:eq:def-simplex}
 \mathcal{M}_H
@@ -433,7 +429,7 @@ with $\mathbf{m}$ satisfies
 x_t(\mathbf{m})
 =
 \sum_{i=1}^H m_i r_t(i)
-+\bigl(1-\sum_{i=1}^H m_i\bigr)r_t.
++\left(1-\sum_{i=1}^H m_i\right)r_t.
 \end{equation}
 Equivalently, with
 \begin{equation}
@@ -518,7 +514,7 @@ $m_i$ and $1-\sum_i m_i$ from \eqref{ch4:eq:def-simplex}.
 
 \begin{Thm:Lemma}[Convexity and Lipschitz continuity of the surrogate cost]
 \label{ch4:lem:sdac-surrogate}
-For $t\in[T]$, define the fixed-policy cost, used as a surrogate cost,
+For $t\in[T]$, define the fixed-policy surrogate cost
 \begin{equation}
 \label{ch4:eq:def-surrogate-cost}
 \ell_t(\mathbf{m})
@@ -570,10 +566,10 @@ Thus \eqref{ch4:eq:def-phi-x} gives, for $i\in[H]$,
 \begin{aligned}
 |\phi_{t,i}^x|
  &=|r_t(i)-r_t|=r_t-r_t(i)
-=\sum_{j=i+1}^{t-1}\alpha^{j-1}w_{t-j}
-\le\sum_{j=i+1}^{\infty}\alpha^{j-1}
-=\frac{\alpha^i}{1-\alpha}
-\le\frac{\alpha}{1-\alpha},\\
+   =\sum_{j=i+1}^{t-1}\alpha^{j-1}w_{t-j}\\
+ &\le\sum_{j=i+1}^{\infty}\alpha^{j-1}
+   =\frac{\alpha^i}{1-\alpha}
+   \le\frac{\alpha}{1-\alpha},\\
 0\le\phi_{t,i}^u&=\alpha^i w_{t-i}\le\alpha^i\le\alpha.
 \end{aligned}
 \]
@@ -588,28 +584,53 @@ when $i\ge t-1$. Hence
 Lemma~\ref{ch4:lem:sdac-feasibility} and
 \eqref{ch4:eq:model-state-bound} place the fixed-policy pairs in
 $\mathcal D_\alpha$, where the cost and subgradient bounds apply.
-Apply Lemma~\ref{lem:intro:convex-comparison} with
-$P=\mathcal M_H$, $Q=\mathcal D_\alpha$, $f=c_t$, the matrix $A$ whose
-rows are $(\boldsymbol\phi_t^x)^\top$ and $(\boldsymbol\phi_t^u)^\top$,
-and $b=(r_t,0)^\top$. Both sets are convex, and
-\eqref{ch4:eq:surr-affine-pair} maps $P$ into $Q$; the lemma gives
-convexity, and \eqref{eq:intro:affine-subgradient} gives
-$\mathbf g_t\in\partial\ell_t(\mathbf m)$ with $\mathbf g_t$ as in
-\eqref{ch4:eq:surr-subgradient}. Moreover,
+The affine formula \eqref{ch4:eq:surr-affine-pair} and
+Lemma~\ref{lem:intro:convex-comparison} give convexity. For
+$\mathbf m,\mathbf m'\in\mathcal M_H$,
 \[
-\|\mathbf g_t\|_\infty
- \le |\zeta_t^x|\,\|\boldsymbol\phi_t^x\|_\infty
-     +|\zeta_t^u|\,\|\boldsymbol\phi_t^u\|_\infty
-\overset{\mathrm{(A)}}{\le}L_x\frac{\alpha}{1-\alpha}+L_u\alpha
- =G_\alpha.
+\begin{aligned}
+\ell_t(\mathbf m')-\ell_t(\mathbf m)
+&\overset{\mathrm{(A)}}{\ge}
+ \zeta_t^x[x_t(\mathbf m')-x_t(\mathbf m)]
+ +\zeta_t^u[u_t(\mathbf m')-u_t(\mathbf m)]\\
+&\overset{\mathrm{(B)}}{=}
+ \zeta_t^x\inner{\boldsymbol\phi_t^x}{\mathbf m'-\mathbf m}
+ +\zeta_t^u\inner{\boldsymbol\phi_t^u}{\mathbf m'-\mathbf m}\\
+&=\inner{\zeta_t^x\boldsymbol\phi_t^x+\zeta_t^u\boldsymbol\phi_t^u}
+        {\mathbf m'-\mathbf m}\\
+&\overset{\mathrm{(C)}}{=}\inner{\mathbf g_t}{\mathbf m'-\mathbf m}.
+\end{aligned}
 \]
-Here (A) substitutes \eqref{ch4:eq:model-subgradient-bounds} and
-\eqref{ch4:eq:surr-coefficient-norms}; the final equality is
-\eqref{ch4:eq:def-surrogate-G}. This constructs a subgradient of dual norm
-at most $G_\alpha$ at every $\mathbf m\in\mathcal M_H$.
-Lemma~\ref{lem:intro:lipschitz}, with $f=\ell_t$, $Q=\mathcal M_H$,
-$L=G_\alpha$, and the $\ell_1/\ell_\infty$ dual pair, then gives the
-Lipschitz bound.
+Here (A) uses the subgradient in \eqref{ch4:eq:model-cost-subgradient};
+(B) substitutes \eqref{ch4:eq:surr-affine-pair};
+(C) is \eqref{ch4:eq:surr-subgradient}.
+Thus $\mathbf g_t\in\partial\ell_t(\mathbf m)$, as in
+\eqref{eq:intro:affine-subgradient}, and
+\[
+\begin{aligned}
+\|\mathbf g_t\|_\infty
+&=\|\zeta_t^x\boldsymbol\phi_t^x+\zeta_t^u\boldsymbol\phi_t^u\|_\infty\\
+&\le |\zeta_t^x|\,\|\boldsymbol\phi_t^x\|_\infty
+     +|\zeta_t^u|\,\|\boldsymbol\phi_t^u\|_\infty\\
+&\overset{\mathrm{(A)}}{\le}
+ L_x\|\boldsymbol\phi_t^x\|_\infty+L_u\|\boldsymbol\phi_t^u\|_\infty\\
+&\overset{\mathrm{(B)}}{\le}L_x\frac{\alpha}{1-\alpha}+L_u\alpha
+ =G_\alpha.
+\end{aligned}
+\]
+Here (A) uses \eqref{ch4:eq:model-subgradient-bounds}, (B) uses
+\eqref{ch4:eq:surr-coefficient-norms}, and the equality is
+\eqref{ch4:eq:def-surrogate-G}. Therefore
+\[
+\begin{aligned}
+\ell_t(\mathbf m)-\ell_t(\mathbf m')
+&\le\inner{\mathbf g_t}{\mathbf m-\mathbf m'}\\
+&\le\|\mathbf g_t\|_\infty\|\mathbf m-\mathbf m'\|_1\\
+&\le G_\alpha\|\mathbf m-\mathbf m'\|_1.
+\end{aligned}
+\]
+Interchanging $\mathbf m$ and $\mathbf m'$ gives the Lipschitz bound,
+as in Lemma~\ref{lem:intro:lipschitz}.
 \end{proof}
 
 \subsection{Entropic SDAC controller}
@@ -650,7 +671,6 @@ u_t
 \alpha x_t
 \right\}.
 \end{equation}
-The state then evolves according to \eqref{ch4:eq:model-dynamics}.
 By \eqref{ch4:eq:def-phi-u}, $\phi_{t,i}^u=\alpha^i w_{t-i}\ge0$ for every
 $i\in[H]$, because $\alpha>0$ and the arrivals are nonnegative. Thus
 \eqref{ch4:eq:alg-feasible-action} and $\mathbf m_t\in\mathcal M_H$ give,
@@ -660,10 +680,10 @@ whenever $x_t\ge0$,
 \qquad x_{t+1}=\alpha x_t-u_t+w_t\ge w_t\ge0.
 \]
 Since $x_1=0$, the online trajectory is feasible. The learning update uses
-the surrogate subgradient at $\mathbf m_t$; clipping only changes the
-executed action. Lemma~\ref{ch4:lem:availability-projection} in the chapter
-appendix identifies that action with a projection onto parameters compatible
-with the current storage level.
+the surrogate subgradient at $\mathbf m_t$. Clipping only changes the
+executed action. Lemma~\ref{ch4:lem:availability-projection}
+shows that the same action results from projecting the policy parameters
+onto the set compatible with the current storage level.
 \paragraph{Surrogate cost and OMD update}
 After $w_t$ and $c_t$ are revealed, the controller evaluates the surrogate
 subgradient $\mathbf g_t=\zeta_t^x\boldsymbol\phi_t^x+\zeta_t^u\boldsymbol\phi_t^u$
@@ -681,8 +701,8 @@ $(x_t(\mathbf m_t),u_t(\mathbf m_t))$, and sets
 \end{equation}
 Apply Lemma~\ref{ch4:lem:omd-closed-form} with $d=H$, $Q=S_H=\mathcal M_H$,
 $q=\mathbf m_t$, and $g=\mathbf g_t$. Its conditions are $\eta>0$ and
-$\mathbf m_t>\mathbf0$; the latter holds initially by
-\eqref{ch4:eq:alg-init} and is preserved by the following two-step update. This gives:
+$\mathbf m_t>\mathbf0$. The latter holds initially by
+\eqref{ch4:eq:alg-init} and is preserved by the following two-step update:
 \begin{equation}
 \label{ch4:eq:alg-omd-mult}
 \widetilde{m}_{t+1,i}
@@ -719,7 +739,7 @@ For every $\mathbf m\in\mathcal M_H$, the fixed-policy cost
  &\quad+\sum_{t=1}^T\bigl[\ell_t(\mathbf m_t)-\ell_t(\mathbf m)\bigr].
 \end{aligned}
 \end{equation}
-The first sum is the tracking difference; the second is surrogate regret.
+The first sum is the tracking difference. The second is surrogate regret.
 Bounding these terms gives the following guarantee.
 
 \begin{Thm:Theorem}[Regret against fixed SDAC policies]
@@ -758,45 +778,42 @@ $\eta^*\coloneqq\sqrt{\log(H+1)/(T\Gamma_\alpha)}$. Then
 \end{Thm:Theorem}
 
 The proof combines surrogate regret with the loss caused by policy changes,
-as in the online-learning-with-memory analysis of
+as in the analysis of online learning with memory in
 \cite[App.~C, proof of Thm.~3.1]{kumar2023unbounded}.
 
 \begin{proof}[Proof of Theorem~\ref{ch4:thm:regret-bound}]
-Fix a comparator $\mathbf m\in\mathcal M_H$. The proof uses the
-$\ell_1$ norm on $\mathcal M_H=S_H$, with dual norm $\ell_\infty$.
-
-\paragraph{Surrogate regret}
-Lemma~\ref{ch4:lem:sdac-surrogate} gives convex surrogate costs and
-$\mathbf g_t\in\partial\ell_t(\mathbf m_t)$ with
-$\|\mathbf g_t\|_\infty\le G_\alpha$.
-Lemma~\ref{lem:intro:entropy}, with $d=H$ and $S_d=\mathcal M_H$,
-gives strong-convexity constant $1$ for $\Psi$ and
-$D_\Psi(\mathbf m,\mathbf m_1)\le\log(H+1)$ at
-\eqref{ch4:eq:alg-init}. The multiplicative update and normalization in
-\eqref{ch4:eq:alg-omd-mult}--\eqref{ch4:eq:alg-omd-proj} preserve
-positivity, so every reference point $\mathbf m_t$, including
-$\mathbf m_{T+1}$, is admissible for the divergence.
-
-Apply Lemma~\ref{lem:intro:mirror-descent} to the objective $\ell_t$
-with $Q=\mathcal M_H$, $\Phi=\Psi$, $\sigma=1$, step size $\eta$,
-reference point $x=\mathbf m_t$, update $x^+=\mathbf m_{t+1}$,
-and comparator $u=\mathbf m$. Convexity of $\ell_t$ and summation of
-\eqref{eq:intro:md-one-step} over $t=1,\ldots,T$ give
+Fix $\mathbf m\in\mathcal M_H=S_H$ and use the $\ell_1/\ell_\infty$ dual pair.
+Lemma~\ref{ch4:lem:sdac-surrogate} gives convex $\ell_t$ and
+$\mathbf g_t\in\partial\ell_t(\mathbf m_t)$ with $\|\mathbf g_t\|_\infty\le G_\alpha$.
+By Lemma~\ref{lem:intro:entropy}, $\Psi$ is $1$-strongly convex and
+$D_\Psi(\mathbf m,\mathbf m_1)\le\log(H+1)$ at \eqref{ch4:eq:alg-init}.
+The updates \eqref{ch4:eq:alg-omd-mult}--\eqref{ch4:eq:alg-omd-proj}
+give $\mathbf m_t>\mathbf0$ for $t\in[T+1]$.
+Lemma~\ref{lem:intro:mirror-descent} and convexity therefore give
 \begin{equation}
 \label{ch4:eq:scalar-surrogate-regret}
 \begin{aligned}
 \sum_{t=1}^T[\ell_t(\mathbf m_t)-\ell_t(\mathbf m)]
-&\le\frac{D_\Psi(\mathbf m,\mathbf m_1)
+&\overset{\mathrm{(A)}}{\le}
+ \sum_{t=1}^T\inner{\mathbf g_t}{\mathbf m_t-\mathbf m}\\
+&\overset{\mathrm{(B)}}{\le}
+ \frac1\eta\sum_{t=1}^T
+ [D_\Psi(\mathbf m,\mathbf m_t)-D_\Psi(\mathbf m,\mathbf m_{t+1})]
+ +\frac\eta2\sum_{t=1}^T\|\mathbf g_t\|_\infty^2\\
+&=\frac{D_\Psi(\mathbf m,\mathbf m_1)
              -D_\Psi(\mathbf m,\mathbf m_{T+1})}{\eta}
        +\frac\eta2\sum_{t=1}^T\|\mathbf g_t\|_\infty^2\\
-&\le\frac{\log(H+1)}{\eta}+\frac{\eta TG_\alpha^2}{2}.
+&\overset{\mathrm{(C)}}{\le}
+ \frac{D_\Psi(\mathbf m,\mathbf m_1)}{\eta}
+ +\frac\eta2\sum_{t=1}^T\|\mathbf g_t\|_\infty^2\\
+&\overset{\mathrm{(D)}}{\le}
+ \frac{\log(H+1)}{\eta}+\frac\eta2\sum_{t=1}^TG_\alpha^2\\
+&=\frac{\log(H+1)}{\eta}+\frac{\eta TG_\alpha^2}{2}.
 \end{aligned}
 \end{equation}
-The divergence terms telescope in the first inequality. The second uses
-the initial-divergence and subgradient bounds above and drops the
-nonpositive terminal term, since $D_\Psi\ge0$ and $\eta>0$.
-The movement bound \eqref{eq:intro:md-movement}, with the same
-reference point and update, gives
+Here (A) is the subgradient inequality, (B) sums
+\eqref{eq:intro:md-one-step}, (C) uses $D_\Psi\ge0$, and (D) uses
+the bounds above. Also, \eqref{eq:intro:md-movement} gives
 \begin{equation}
 \label{ch4:eq:scalar-md-movement}
 \|\mathbf m_{t+1}-\mathbf m_t\|_1
@@ -804,7 +821,6 @@ reference point and update, gives
 \qquad t\in[T].
 \end{equation}
 
-\paragraph{Tracking bound}
 For any $\mathbf m,\mathbf m'\in\mathcal M_H$, the affine state formula
 \eqref{ch4:eq:surr-affine-pair} and H\"older's inequality give
 \[
@@ -814,53 +830,64 @@ For any $\mathbf m,\mathbf m'\in\mathcal M_H$, the affine state formula
 \le\frac{\alpha}{1-\alpha}\|\mathbf m-\mathbf m'\|_1.
 \]
 The final inequality is \eqref{ch4:eq:surr-coefficient-norms}.
-Write $v_t\coloneqq u_t(\mathbf m_t)$ for the requested action and define the
-tracking error $e_t\coloneqq|x_t-x_t(\mathbf m_t)|$, used only in the proof,
-for $t\in[T]$.
-Both trajectories start from zero, so $e_1=0$.
-Fixed-policy feasibility gives $0\le v_t\le\alpha x_t(\mathbf m_t)$.
-The clipped online transition and the fixed-policy transition therefore
-satisfy, for $1\le t<T$,
+Define $v_t\coloneqq u_t(\mathbf m_t)$ and
+$e_t\coloneqq|x_t-x_t(\mathbf m_t)|$ for $t\in[T]$. Then $e_1=0$.
+Fixed-policy feasibility and \eqref{ch4:eq:alg-feasible-action} give
+$0\le v_t\le\alpha x_t(\mathbf m_t)$ and, for $1\le t<T$,
 \[
 x_{t+1}=[\alpha x_t-v_t]_++w_t,
 \qquad
 x_{t+1}(\mathbf m_t)=[\alpha x_t(\mathbf m_t)-v_t]_++w_t.
 \]
-Compare these transitions before changing the policy parameter:
+By \eqref{eq:intro:positive-part-nonexpansive},
+\[
+\begin{aligned}
+|x_{t+1}-x_{t+1}(\mathbf m_t)|
+&=|[\alpha x_t-v_t]_+-[\alpha x_t(\mathbf m_t)-v_t]_+|\\
+&\le|(\alpha x_t-v_t)-(\alpha x_t(\mathbf m_t)-v_t)|\\
+&=\alpha|x_t-x_t(\mathbf m_t)|=\alpha e_t.
+\end{aligned}
+\]
+Hence
 \begin{equation}
 \label{ch4:eq:scalar-tracking-recursion}
 \begin{aligned}
 e_{t+1}
+&=|x_{t+1}-x_{t+1}(\mathbf m_{t+1})|\\
 &\le |x_{t+1}-x_{t+1}(\mathbf m_t)|
      +|x_{t+1}(\mathbf m_t)-x_{t+1}(\mathbf m_{t+1})|\\
 &\le\alpha e_t
+     +|x_{t+1}(\mathbf m_t)-x_{t+1}(\mathbf m_{t+1})|\\
+&\overset{\mathrm{(A)}}{\le}\alpha e_t
     +\frac{\alpha}{1-\alpha}\|\mathbf m_{t+1}-\mathbf m_t\|_1\\
-&\le\alpha e_t+\frac{\alpha\eta G_\alpha}{1-\alpha}.
+&\overset{\mathrm{(B)}}{\le}\alpha e_t+\frac{\alpha\eta G_\alpha}{1-\alpha}.
 \end{aligned}
 \end{equation}
-The second inequality applies the positive-part bound
-\eqref{eq:intro:positive-part-nonexpansive} to the two transitions
-and the state sensitivity bound above at time $t+1$.
-The last inequality uses \eqref{ch4:eq:scalar-md-movement}.
-Sum the recursion over $t=1,\ldots,T-1$ and use $e_1=0$:
+Here (A) applies the inequality for
+$|x_t(\mathbf m)-x_t(\mathbf m')|$ above at time $t+1$;
+(B) uses \eqref{ch4:eq:scalar-md-movement}. Since $e_1=0$,
 \[
 \begin{aligned}
-\sum_{t=1}^T e_t
-&=\sum_{t=1}^{T-1}e_{t+1}
-\le\alpha\sum_{t=1}^{T-1}e_t
-   +\frac{\alpha\eta G_\alpha(T-1)}{1-\alpha}\\
-&=\alpha\sum_{t=1}^{T}e_t-\alpha e_T
-   +\frac{\alpha\eta G_\alpha(T-1)}{1-\alpha}.
+(1-\alpha)\sum_{t=1}^T e_t+\alpha e_T
+&=\left(\sum_{t=1}^T e_t-e_1\right)
+ -\alpha\left(\sum_{t=1}^T e_t-e_T\right)\\
+&=\sum_{t=1}^{T-1}e_{t+1}-\alpha\sum_{t=1}^{T-1}e_t\\
+&=\sum_{t=1}^{T-1}(e_{t+1}-\alpha e_t)\\
+&\overset{\mathrm{(C)}}{\le}
+ \sum_{t=1}^{T-1}\frac{\alpha\eta G_\alpha}{1-\alpha}
+ =\frac{\alpha\eta G_\alpha(T-1)}{1-\alpha}.
 \end{aligned}
 \]
-Drop $-\alpha e_T\le0$, subtract $\alpha\sum_{t=1}^T e_t$, and
-divide by $1-\alpha>0$ to obtain
+Here (C) uses \eqref{ch4:eq:scalar-tracking-recursion}. Subtracting
+$\alpha e_T$ and dividing by $1-\alpha>0$ gives
 \begin{equation}
 \label{ch4:eq:scalar-tracking-state-sum}
 \sum_{t=1}^T e_t
+\le\frac{\alpha\eta G_\alpha(T-1)}{(1-\alpha)^2}
+   -\frac{\alpha e_T}{1-\alpha}
 \le\frac{\alpha\eta G_\alpha(T-1)}{(1-\alpha)^2}.
 \end{equation}
-For $T=1$, the sums over $t<T$ are empty and both sides are zero.
+The last inequality uses $e_T\ge0$.
 Clipping and fixed-policy feasibility also give
 \begin{equation}
 \label{ch4:eq:scalar-clipping-error}
@@ -869,7 +896,7 @@ Clipping and fixed-policy feasibility also give
 \le\alpha e_t.
 \end{equation}
 The first inequality between positive parts uses monotonicity and
-$v_t\le\alpha x_t(\mathbf m_t)$; the last uses $[a]_+\le|a|$.
+$v_t\le\alpha x_t(\mathbf m_t)$. The last uses $[a]_+\le|a|$.
 Both state--action pairs lie in $\mathcal D_\alpha$ by feasibility and
 \eqref{ch4:eq:model-state-bound}. Apply the cost Lipschitz bound
 \eqref{ch4:eq:model-lipschitz} at $(x_t,u_t)$ and
@@ -879,30 +906,35 @@ $(x_t(\mathbf m_t),v_t)$, and sum:
 \begin{aligned}
 \sum_{t=1}^T|c_t(x_t,u_t)-\ell_t(\mathbf m_t)|
 &\le\sum_{t=1}^T\bigl(L_xe_t+L_u|u_t-v_t|\bigr)\\
-&\le(L_x+\alpha L_u)\sum_{t=1}^Te_t\\
+&\le\sum_{t=1}^T\bigl(L_xe_t+\alpha L_ue_t\bigr)\\
+&=(L_x+\alpha L_u)\sum_{t=1}^Te_t\\
 &\le\frac{\alpha\eta G_\alpha(L_x+\alpha L_u)(T-1)}{(1-\alpha)^2}.
 \end{aligned}
 \end{equation}
 The last two inequalities use \eqref{ch4:eq:scalar-clipping-error}
 and \eqref{ch4:eq:scalar-tracking-state-sum}, respectively.
 
-\paragraph{Regret and parameter choice}
 Insert \eqref{ch4:eq:scalar-surrogate-regret} and
 \eqref{ch4:eq:scalar-tracking-cost-sum} into the decomposition
 \eqref{ch4:eq:regret-decomposition}. Since $T-1\le T$ and
 $\sum_{t=1}^T\ell_t(\mathbf m)=J_T(\mathbf m)$, this gives
 \[
+\begin{aligned}
 J_T^{\mathrm{on}}-J_T(\mathbf m)
-\le\frac{\log(H+1)}{\eta}
+&\le\frac{\log(H+1)}{\eta}+\frac{\eta TG_\alpha^2}{2}
+ +\frac{\alpha\eta G_\alpha(L_x+\alpha L_u)(T-1)}{(1-\alpha)^2}\\
+&\le\frac{\log(H+1)}{\eta}+\frac{\eta TG_\alpha^2}{2}
+ +\frac{\alpha\eta G_\alpha(L_x+\alpha L_u)T}{(1-\alpha)^2}\\
+&=\frac{\log(H+1)}{\eta}
  +\eta T\left[\frac{G_\alpha^2}{2}
-       +\frac{\alpha G_\alpha(L_x+\alpha L_u)}{(1-\alpha)^2}\right]
-=\frac{\log(H+1)}{\eta}+\eta T\Gamma_\alpha.
+       +\frac{\alpha G_\alpha(L_x+\alpha L_u)}{(1-\alpha)^2}\right]\\
+&=\frac{\log(H+1)}{\eta}+\eta T\Gamma_\alpha.
+\end{aligned}
 \]
-The bound is independent of $\mathbf m\in\mathcal M_H$, so it proves
-\eqref{ch4:eq:regret-theorem-bound} for the regret in
-\eqref{ch4:eq:def-regret}. Because $H,T\ge1$, $L_x,L_u>0$, and
-$0<\alpha<1$, both $\log(H+1)$ and $T\Gamma_\alpha$ are positive.
-At $\eta^*=\sqrt{\log(H+1)/(T\Gamma_\alpha)}$,
+Taking the supremum over $\mathbf m\in\mathcal M_H$ gives
+\eqref{ch4:eq:regret-theorem-bound} by \eqref{ch4:eq:def-regret}.
+Since $\log(H+1)>0$ and $\Gamma_\alpha>0$,
+$\eta^*=\sqrt{\log(H+1)/(T\Gamma_\alpha)}>0$, and
 \[
 \frac{\log(H+1)}{\eta^*}
 =\eta^*T\Gamma_\alpha
@@ -976,7 +1008,7 @@ applies with memory $t-1$. At $t=1$, both state and action are zero by
 \eqref{ch4:eq:model-init} and \eqref{ch4:eq:def-infinite-sdac-policy}.
 This proves feasibility of every $\mathbf m\in\mathcal M_\infty$.
 
-For $t\in[T]$, define the removed action and the induced state gap by
+For $t\in[T]$, define
 \begin{equation}
 \label{ch4:eq:sdac-truncation-gaps}
 \begin{aligned}
@@ -986,7 +1018,7 @@ e_t^x&\coloneqq x_t(\mathbf m^{[H]})-x_t(\mathbf m).
 \end{aligned}
 \end{equation}
 Since $w_s\in[0,1]$, $m_i\ge0$, $\sum_{i\ge1}m_i\le1$, and
-$0<\alpha<1$, the removed action satisfies
+$0<\alpha<1$, we have
 \[
 0\le e_t^u\le\alpha^{H+1}\sum_{i=H+1}^{t-1}m_i
 \le\alpha^{H+1}.
@@ -1004,7 +1036,7 @@ Iterating and using the action bound yields
 \le\alpha^{H+1}\sum_{j=0}^{t-2}\alpha^j
 \le\frac{\alpha^{H+1}}{1-\alpha},\qquad t\in[T].
 \end{equation}
-The final inequality sums the geometric series with $0<\alpha<1$. Both trajectories lie in $\mathcal D_\alpha$
+Both trajectories lie in $\mathcal D_\alpha$
 by feasibility and \eqref{ch4:eq:model-state-bound}. The triangle
 inequality and \eqref{ch4:eq:model-lipschitz} therefore give
 \[
@@ -1016,8 +1048,8 @@ inequality and \eqref{ch4:eq:model-lipschitz} therefore give
 \end{aligned}
 \]
 The equality is \eqref{ch4:eq:def-surrogate-G}.
-If $H\ge T-1$, every action-gap sum is empty, and the state-gap recursion
-gives $e_t^u=e_t^x=0$ for all $t\in[T]$.
+If $H\ge T-1$, the sum defining $e_t^u$ is empty, and the recursion for
+$e_t^x$ gives $e_t^u=e_t^x=0$ for all $t\in[T]$.
 \end{proof}
 
 For $k\in[0,\alpha]$, the fixed-fraction policy chooses $u_t(k)\coloneqq kx_t(k)$
@@ -1058,8 +1090,8 @@ Taking $N\to\infty$ shows $\sum_{i\ge1}m_i(k)\le1$.
 Thus $\mathbf m(k)\in\mathcal M_\infty$ by
 \eqref{ch4:eq:def-infinite-simplex}.
 Since $\alpha-k\ge0$ and $w_t\ge0$, the recursion
-\eqref{ch4:eq:fixed-fraction-dynamics} from $x_1(k)=0$ gives nonnegative states;
-$0\le k\le\alpha$ then gives feasibility in
+\eqref{ch4:eq:fixed-fraction-dynamics} from $x_1(k)=0$ gives nonnegative states.
+The condition $0\le k\le\alpha$ then gives feasibility in
 \eqref{ch4:eq:model-feasibility}. Iterating the state recursion and using
 $\alpha^i m_i(k)=k(\alpha-k)^{i-1}$ from
 \eqref{ch4:eq:fixed-fraction-coefficients} in
@@ -1091,6 +1123,7 @@ For
 \Reg_T(\mathcal M_\infty)
 \coloneqq J_T^{\mathrm{on}}-\inf_{\mathbf m\in\mathcal M_\infty}J_T(\mathbf m),
 \end{equation}
+we have
 \begin{equation}
 \label{ch4:eq:infinite-sdac-regret-bound}
 \Reg_T(\mathcal M_\infty)
@@ -1106,67 +1139,81 @@ J_T^{\mathrm{on}}
 \]
 \end{Thm:Corollary}
 \begin{proof}
-For every $\mathbf m\in\mathcal M_\infty$, compare the online cost with
-its truncation $\mathbf m^{[H_T]}\in\mathcal M_{H_T}$:
+For every $\mathbf m\in\mathcal M_\infty$,
+$\mathbf m^{[H_T]}\in\mathcal M_{H_T}$ and
 \begin{align*}
 J_T^{\mathrm{on}}-J_T(\mathbf m)
 &=J_T^{\mathrm{on}}-J_T(\mathbf m^{[H_T]})
 +J_T(\mathbf m^{[H_T]})-J_T(\mathbf m)\\
 &\overset{\mathrm{(A)}}{\le}
+ J_T^{\mathrm{on}}-\min_{\mathbf m'\in\mathcal M_{H_T}}J_T(\mathbf m')
+ +J_T(\mathbf m^{[H_T]})-J_T(\mathbf m)\\
+&=\Reg_T(\mathcal M_{H_T})
+ +J_T(\mathbf m^{[H_T]})-J_T(\mathbf m)\\
+&\overset{\mathrm{(B)}}{\le}
  2\sqrt{\Gamma_\alpha T\log(H_T+1)}
 +J_T(\mathbf m^{[H_T]})-J_T(\mathbf m)\\
-&\overset{\mathrm{(B)}}{\le}
+&\le2\sqrt{\Gamma_\alpha T\log(H_T+1)}
+ +|J_T(\mathbf m^{[H_T]})-J_T(\mathbf m)|\\
+&\overset{\mathrm{(C)}}{\le}
  2\sqrt{\Gamma_\alpha T\log(H_T+1)}+TG_\alpha\alpha^{H_T}.
 \end{align*}
-Step (A) uses \eqref{ch4:eq:def-regret} and
-\eqref{ch4:eq:regret-theorem-optimized} with $H=H_T\ge1$ and its optimized
-step size $\eta^*$; the regret bound applies to every comparator in
-$\mathcal M_{H_T}$. Step (B) uses the absolute cost-gap bound
-\eqref{ch4:eq:sdac-truncation-cost-gap} with $H=H_T$.
-Taking the supremum over $\mathbf m\in\mathcal M_\infty$ gives
-\eqref{ch4:eq:infinite-sdac-regret-bound} by
-\eqref{ch4:eq:def-infinite-regret}.
-
-Because $T\ge1$ and $0<\alpha<1$, the memory choice
-\eqref{ch4:eq:def-infinite-memory-length} satisfies
+Here (A) uses $\mathbf m^{[H_T]}\in\mathcal M_{H_T}$, and the next equality
+is \eqref{ch4:eq:def-regret}. Step (B) applies
+\eqref{ch4:eq:regret-theorem-optimized} with $H=H_T$ and step size $\eta^*$;
+(C) is \eqref{ch4:eq:sdac-truncation-cost-gap}. By
+\eqref{ch4:eq:def-infinite-regret},
+\[
+\begin{aligned}
+\Reg_T(\mathcal M_\infty)
+&=\sup_{\mathbf m\in\mathcal M_\infty}
+  [J_T^{\mathrm{on}}-J_T(\mathbf m)]\\
+&\le2\sqrt{\Gamma_\alpha T\log(H_T+1)}+TG_\alpha\alpha^{H_T},
+\end{aligned}
+\]
+which is \eqref{ch4:eq:infinite-sdac-regret-bound}. The choice
+\eqref{ch4:eq:def-infinite-memory-length} gives
 \[
 \frac{\log T}{\log(1/\alpha)}\le H_T
 \le1+\frac{\log T}{\log(1/\alpha)}.
 \]
-These bounds include $T=1$, when $H_T=1$.
-Since $h\mapsto\alpha^h$ is decreasing,
+Since $0<\alpha<1$,
 \[
+\begin{aligned}
 TG_\alpha\alpha^{H_T}
-\le TG_\alpha\alpha^{\log T/\log(1/\alpha)}
-=TG_\alpha e^{-\log T}=G_\alpha.
+&\le TG_\alpha\alpha^{\log T/\log(1/\alpha)}\\
+&=TG_\alpha\exp\!\left(\frac{\log T}{\log(1/\alpha)}\log\alpha\right)\\
+&=TG_\alpha e^{-\log T}=G_\alpha.
+\end{aligned}
 \]
-The upper bound on $H_T$ gives
-$H_T=O(\log T)$ and $\log(H_T+1)=O(\log\log T)$ as $T\to\infty$
-for fixed $\alpha$. Thus, for fixed model and cost constants, the regret
-bound is $O(\sqrt{T\log\log T})=o(T)$, since $\log\log T/T\to0$.
-For the fixed-fraction comparison,
+For fixed $\alpha,L_x,L_u$,
+$H_T=O(\log T)$ and $\log(H_T+1)=O(\log\log T)$, so the regret bound is
+$O(\sqrt{T\log\log T})=o(T)$.
+Also,
 \begin{align*}
  \inf_{\mathbf m\in\mathcal M_\infty}J_T(\mathbf m)
  &\overset{\mathrm{(A)}}{\le}\min_{k\in[0,\alpha]}J_T(\mathbf m(k))\\
  &=\min_{k\in[0,\alpha]}
    \sum_{t=1}^Tc_t(x_t(k),u_t(k)).
 \end{align*}
-Step (A) restricts the infimum to
-$\{\mathbf m(k):k\in[0,\alpha]\}\subseteq\mathcal M_\infty$ by
-Corollary~\ref{ch4:cor:fraction-as-sdac}, which also supplies the
-trajectory equality in the last line. The minimum exists because the
-recurrence makes $x_t(k)$ and $u_t(k)$ continuous in $k$,
-\eqref{ch4:eq:model-lipschitz} makes the cost continuous along these
-feasible trajectories, and $[0,\alpha]$ is compact. Subtracting these
-benchmark costs from $J_T^{\mathrm{on}}$ gives the claimed regret comparison.
+Here (A) uses $\{\mathbf m(k):k\in[0,\alpha]\}\subseteq\mathcal M_\infty$,
+and the equality follows from Corollary~\ref{ch4:cor:fraction-as-sdac}.
+Consequently,
+\[
+\begin{aligned}
+J_T^{\mathrm{on}}-\min_{k\in[0,\alpha]}
+ \sum_{t=1}^Tc_t(x_t(k),u_t(k))
+&\le J_T^{\mathrm{on}}-\inf_{\mathbf m\in\mathcal M_\infty}J_T(\mathbf m)\\
+&=\Reg_T(\mathcal M_\infty).
+\end{aligned}
+\]
 \end{proof}
 
 \section{Regret lower bound}
 \label{ch4:sec:regret-lower-bound}
 
 We now show that the entropic SDAC controller's $\sqrt T$ regret dependence
-is optimal for fixed $H,\alpha,L_x,L_u$. The lower bound does not match
-the upper bound's dependence on $H$ or $\alpha$.
+is optimal for fixed $H,\alpha,L_x,L_u$.
 
 \begin{Thm:Theorem}[SDAC regret lower bound]
 \label{ch4:thm:sdac-lower-bound}
@@ -1206,10 +1253,9 @@ $\alpha$ remains unresolved.
 \begin{proof}
 Fix a causal feasible controller $\mathcal A$.
 We use the random-sign argument of Hazan, Agarwal, and Kale
-\cite[Sec.~2.3, footnote~3]{hazan2007logarithmic}; see also
+\cite[Sec.~2.3, footnote~3]{hazan2007logarithmic}. See also
 \cite[Sec.~3.2, Thm.~3.2]{hazan2016introduction}.
 
-\paragraph{Admissible costs}
 Let $\xi_1,\ldots,\xi_T$ be independent random signs, each equal to $1$
 or $-1$ with probability $1/2$, and independent of the controller's
 randomization. Write $\boldsymbol\xi\coloneqq(\xi_1,\ldots,\xi_T)$ and set
@@ -1220,8 +1266,6 @@ Each cost is affine with gradient $\xi_t(L_x,-L_u)$, so it is convex
 and satisfies both the Lipschitz and subgradient bounds
 \eqref{ch4:eq:model-lipschitz}--\eqref{ch4:eq:model-subgradient-bounds}.
 
-
-\paragraph{Comparator cost difference}
 Since $H\ge1$, the two parameters
 \[
 \mathbf m^{(0)}\coloneqq\mathbf0,\qquad
@@ -1251,84 +1295,111 @@ Both policies incur zero cost at $t=1$. Define
 \end{equation}
 Subtracting their costs gives
 \[
+\begin{aligned}
 J_T(\mathbf m^{(0)})-J_T(\mathbf m^{(1)})
-=\sum_{t=2}^T\xi_t\beta_t.
+&=\sum_{t=2}^T\xi_t
+ \left[L_x\left(\frac{1-\alpha^{t-1}}{1-\alpha}-1\right)+\alpha L_u\right]\\
+&=\sum_{t=2}^T\xi_t
+ \left[L_x\frac{\alpha-\alpha^{t-1}}{1-\alpha}+\alpha L_u\right]\\
+&=\sum_{t=2}^T\xi_t\alpha
+ \left[L_u+\frac{L_x(1-\alpha^{t-2})}{1-\alpha}\right]\\
+&=\sum_{t=2}^T\xi_t\beta_t.
+\end{aligned}
 \]
 
-
-\paragraph{Expected costs}
 By causality, $(x_t,u_t)$ depends only on past signs and the controller's
 randomization, and is independent of $\xi_t$. The two fixed-policy
 trajectories depend only on the arrivals. Since $\mathbb E[\xi_t]=0$,
-all three expected cumulative costs are zero:
-\[
-\mathbb E_{\boldsymbol\xi,\mathcal A}[J_T^{\mathrm{on}}]=0,
-\qquad
-\mathbb E_{\boldsymbol\xi}[J_T(\mathbf m^{(j)})]=0,
-\quad j\in\{0,1\}.
-\]
-
-
-\paragraph{Expected regret}
-Restricting the comparator minimum to two members of $\mathcal M_H$
-increases that minimum. By \eqref{ch4:eq:def-regret} and
-$\min\{a,b\}=(a+b-|a-b|)/2$,
 \[
 \begin{aligned}
-\Reg_T(\mathcal M_H)
-&\ge J_T^{\mathrm{on}}
--\min\{J_T(\mathbf m^{(0)}),J_T(\mathbf m^{(1)})\}\\
-&=J_T^{\mathrm{on}}
--\frac{J_T(\mathbf m^{(0)})+J_T(\mathbf m^{(1)})}{2}\\
-&\quad+\frac12\left|J_T(\mathbf m^{(0)})-J_T(\mathbf m^{(1)})\right|.
+\mathbb E_{\boldsymbol\xi,\mathcal A}[J_T^{\mathrm{on}}]
+&=\sum_{t=1}^T\mathbb E_{\boldsymbol\xi,\mathcal A}
+ [\xi_t(L_xx_t-L_uu_t)]\\
+&=\sum_{t=1}^T\mathbb E[\xi_t]\,
+ \mathbb E_{\boldsymbol\xi,\mathcal A}[L_xx_t-L_uu_t]=0,\\
+\mathbb E_{\boldsymbol\xi}[J_T(\mathbf m^{(j)})]
+&=\sum_{t=1}^T\mathbb E[\xi_t]\,
+ [L_xx_t(\mathbf m^{(j)})-L_uu_t(\mathbf m^{(j)})]=0,
+ \quad j\in\{0,1\}.
 \end{aligned}
 \]
-Taking expectations and using these zero expected costs gives
+
+Using $\min\{a,b\}=(a+b-|a-b|)/2$,
 \[
 \begin{aligned}
 \mathbb E_{\boldsymbol\xi,\mathcal A}[\Reg_T(\mathcal M_H)]
-&\ge\frac12\mathbb E_{\boldsymbol\xi}
+&\overset{\mathrm{(A)}}{\ge}
+ \mathbb E_{\boldsymbol\xi,\mathcal A}
+ \bigl[J_T^{\mathrm{on}}-\min\{J_T(\mathbf m^{(0)}),J_T(\mathbf m^{(1)})\}\bigr]\\
+&=\mathbb E_{\boldsymbol\xi,\mathcal A}[J_T^{\mathrm{on}}]
+ -\frac12\mathbb E_{\boldsymbol\xi}
+ \bigl[J_T(\mathbf m^{(0)})+J_T(\mathbf m^{(1)})\bigr]\\
+&\quad+\frac12\mathbb E_{\boldsymbol\xi}
+ \left|J_T(\mathbf m^{(0)})-J_T(\mathbf m^{(1)})\right|\\
+&\overset{\mathrm{(B)}}{=}\frac12\mathbb E_{\boldsymbol\xi}
+ \left|J_T(\mathbf m^{(0)})-J_T(\mathbf m^{(1)})\right|\\
+&=\frac12\mathbb E_{\boldsymbol\xi}
 \left|\sum_{t=2}^T\xi_t\beta_t\right|\\
-&\ge\frac{1}{2\sqrt2}\sqrt{\sum_{t=2}^T\beta_t^2}.
+&\overset{\mathrm{(C)}}{\ge}\frac{1}{2\sqrt2}\sqrt{\sum_{t=2}^T\beta_t^2}.
 \end{aligned}
 \]
-The second inequality applies the $p=1$ Khintchine inequality
-\cite{szarek1976best} to the deterministic real coefficients
-$\beta_2,\ldots,\beta_T$ and independent random signs
-$\xi_2,\ldots,\xi_T$.
+Here (A) uses \eqref{ch4:eq:def-regret} and
+$\{\mathbf m^{(0)},\mathbf m^{(1)}\}\subseteq\mathcal M_H$;
+(B) uses the zero expected costs, and the next equality substitutes
+their difference above;
+(C) is the $p=1$ Khintchine inequality \cite{szarek1976best} for the
+deterministic coefficients $\beta_2,\ldots,\beta_T$ and independent signs.
 
-The left side is the average of
-$\mathbb E_{\mathcal A}[\Reg_T(\mathcal M_H)]$ over the $2^T$ equally
-likely sign sequences. At least one sequence attains or exceeds this
-average. Fixing that sequence before the interaction gives
-\begin{equation}
-\label{ch4:eq:sdac-lower-exact}
-\mathbb E_{\mathcal A}\!\left[\Reg_T(\mathcal M_H)\right]
-\ge\frac{1}{2\sqrt2}\sqrt{\sum_{t=2}^T\beta_t^2}.
-\end{equation}
-
-\paragraph{Completing the bound}
 Let $q_\alpha\coloneqq\lceil\log2/\log(1/\alpha)\rceil$.
-For $t\ge q_\alpha+2$, we have $\alpha^{t-2}\le1/2$, so
-\eqref{ch4:eq:sdac-lower-beta} gives
-$\beta_t\ge\alpha(L_u+L_x/(2(1-\alpha)))\ge G_\alpha/2$.
-Under \eqref{ch4:eq:sdac-lower-horizon}, there are
-$T-q_\alpha-1\ge T/2$ such rounds. Consequently,
+For $t\ge q_\alpha+2$, $0<\alpha<1$ gives
+\[
+\alpha^{t-2}\le\alpha^{q_\alpha}
+\le\alpha^{\log2/\log(1/\alpha)}=\frac12.
+\]
+Thus \eqref{ch4:eq:sdac-lower-beta} gives
+\[
+\begin{aligned}
+\beta_t
+&=\alpha\left(L_u+\frac{L_x(1-\alpha^{t-2})}{1-\alpha}\right)\\
+&\ge\alpha L_u+\frac{\alpha L_x}{2(1-\alpha)}\\
+&\ge\frac{\alpha L_u}{2}+\frac{\alpha L_x}{2(1-\alpha)}
+ =\frac{G_\alpha}{2}.
+\end{aligned}
+\]
+By \eqref{ch4:eq:sdac-lower-horizon}, $q_\alpha+1\le T/2$, so
+\[
+\begin{aligned}
+\sum_{t=2}^T\beta_t^2
+&\ge\sum_{t=q_\alpha+2}^T\beta_t^2\\
+&\ge(T-q_\alpha-1)\left(\frac{G_\alpha}{2}\right)^2\\
+&\ge\frac T2\left(\frac{G_\alpha}{2}\right)^2.
+\end{aligned}
+\]
+Consequently,
 \[
 \frac{1}{2\sqrt2}\sqrt{\sum_{t=2}^T\beta_t^2}
 \ge\frac{1}{2\sqrt2}\sqrt{\frac T2\left(\frac{G_\alpha}{2}\right)^2}
 =\frac{G_\alpha}{8}\sqrt T.
 \]
-Together with \eqref{ch4:eq:sdac-lower-exact}, this proves
+The expectation over $\boldsymbol\xi$ averages over $2^T$ equally likely
+sign sequences. At least one sequence attains or exceeds this average.
+Fixing it before the interaction gives
+\begin{equation}
+\label{ch4:eq:sdac-lower-exact}
+\mathbb E_{\mathcal A}\!\left[\Reg_T(\mathcal M_H)\right]
+\ge\frac{1}{2\sqrt2}\sqrt{\sum_{t=2}^T\beta_t^2}
+\ge\frac{G_\alpha}{8}\sqrt T,
+\end{equation}
+Equation~\eqref{ch4:eq:sdac-lower-exact} proves
 \eqref{ch4:eq:sdac-lower-large-horizon}.
 \end{proof}
 
 \section{Conclusion}
 \label{ch4:sec:conclusion}
 
-Theorem~\ref{ch4:thm:regret-bound} gives the feasible entropic SDAC
-controller regret at most $2\sqrt{\Gamma_\alpha T\log(H+1)}$ with the
-optimized step size. With $H=H_T$ from
+Theorem~\ref{ch4:thm:regret-bound} bounds the regret of the feasible entropic
+SDAC controller by $2\sqrt{\Gamma_\alpha T\log(H+1)}$ with the optimized
+step size. With $H=H_T$ from
 \eqref{ch4:eq:def-infinite-memory-length},
 Corollary~\ref{ch4:cor:regret-vs-infinite-sdac} gives
 $O(\sqrt{T\log\log T})$ regret against infinite-memory SDAC policies
@@ -1342,14 +1413,15 @@ $(1-\alpha)^{-1/2}$ in retention dependence as $\alpha\uparrow1$ remain
 unresolved, with the latter comparison subject to
 \eqref{ch4:eq:sdac-lower-horizon}.
 
-The upper bounds require full-function feedback and enough capacity to
-avoid saturation, as specified in Subsection~\ref{ch4:sec:model-setup}.
+The upper bounds require revelation of the full cost function and enough
+capacity to avoid saturation, as specified in
+Subsection~\ref{ch4:sec:model-setup}.
 Feedback only at the executed state--action pair need not determine the
 surrogate subgradient, and active saturation can destroy the affine
 fixed-policy trajectories used to establish convexity in
 Lemma~\ref{ch4:lem:sdac-surrogate}.
 
-\section{Appendix: action clipping as a projection}
+\section{Action clipping as a projection}
 \label{ch4:subsec:scalar-entropy}
 
 \begin{Thm:Lemma}[Action clipping as a Bregman projection]
@@ -1387,16 +1459,9 @@ Then
 \end{Thm:Lemma}
 
 \begin{proof}
-The set $\mathcal B_t$ is compact and convex by
-\eqref{ch4:eq:availability-set} and \eqref{ch4:eq:def-simplex}, and contains
-$\mathbf0$ because $x_t\ge0$. The iterates $\mathbf m_t$ are positive.
-Each summand in \eqref{eq:intro:generalized-kl} is continuous and strictly
-convex in its first argument on $[0,\infty)$, so the minimizer exists
-and is unique.
-
 Write $a_t\coloneqq\inner{\boldsymbol\phi_t^u}{\mathbf m_t}$ and
 $b_t\coloneqq\inner{\boldsymbol\phi_t^u}{\mathbf m_t^{\mathrm{exec}}}$.
-If $a_t\le\alpha x_t$, then $\mathbf m_t\in\mathcal B_t$;
+If $a_t\le\alpha x_t$, then $\mathbf m_t\in\mathcal B_t$. In this case,
 \eqref{eq:intro:entropy-curvature} and
 $D_\Psi(\mathbf m_t,\mathbf m_t)=0$ give
 $\mathbf m_t^{\mathrm{exec}}=\mathbf m_t$.
@@ -1417,7 +1482,6 @@ D_\Psi(\mathbf m_\theta,\mathbf m_t)
 <D_\Psi(\mathbf m_t^{\mathrm{exec}},\mathbf m_t).
 \end{aligned}
 \]
-The equality uses $D_\Psi(\mathbf m_t,\mathbf m_t)=0$; the strict
-inequality uses $\theta>0$ and \eqref{eq:intro:entropy-curvature}, since
+The strict inequality uses $\theta>0$ and \eqref{eq:intro:entropy-curvature}, since
 $a_t\ne b_t$. This contradicts optimality, so $b_t=\alpha x_t$, as required.
 \end{proof}

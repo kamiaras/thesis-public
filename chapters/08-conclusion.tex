@@ -12,7 +12,7 @@ and a finite grid of transmission rates to obtain tractable updates.
 Chapter~\ref{Section:projfree-domain} develops a method for nonsmooth
 convex optimization over compact convex domains. A multiplier couples
 domain points produced by linear optimization to auxiliary query points.
-With parameters chosen for query budget $T$, the method attains an
+With parameters chosen for a query budget $T$, the method attains an
 objective gap of $O(T^{-1/2})$ using at most $T$ calls to each oracle:
 an exact ordinary linear oracle over the original domain and a
 subgradient oracle on the auxiliary set. Projections are
@@ -23,7 +23,7 @@ Chapter~\ref{Section:projfree} applies the algorithm of Asgari and
 Neely~\cite{asgari2024nonsmooth} to the positive parts of the constraints.
 Keeping the functional inequalities outside the linear oracle preserves
 the tractability of the oracle on the original domain.
-With parameters chosen for query budget $T$, it gives an $O(T^{-1/2})$
+With parameters chosen for a query budget $T$, it gives an $O(T^{-1/2})$
 upper bound on the objective gap at the returned domain point.
 The constraint-violation norm has the same rate if a Lagrange
 multiplier exists. The algorithm need not know the multiplier's value,
@@ -40,8 +40,8 @@ Under the stated arrival and information assumptions, tuning for a planned
 horizon of $T$ slots gives expected cumulative regret
 $O(\sqrt{T(1+\log n)})$ with sufficient battery capacity
 $B_{\mathrm{max}}=3\sqrt T=O(\sqrt T)$.
-The controller respects
-available energy on every slot without knowing the mean arrival.
+The controller uses only the energy available in each slot without knowing
+the mean arrival.
 
 Chapter~\ref{Section:ChapControl} studies scalar storage control with arrivals
 in $[0,1]$ and full cost feedback.
@@ -52,12 +52,12 @@ size, it achieves $O(\sqrt{T\log\log T})$ regret against the fixed
 infinite-memory SDAC class.
 
 For retention $\alpha\in(0,1)$, positive cost Lipschitz bounds $L_x,L_u$,
-and integer $H\ge1$, Theorem~\ref{ch4:thm:sdac-lower-bound} gives a lower
+and an integer $H\ge1$, Theorem~\ref{ch4:thm:sdac-lower-bound} gives a lower
 bound against the fixed memory-$H$ SDAC class. Under the horizon condition
 \eqref{ch4:eq:sdac-lower-horizon},
 for every causal feasible controller $\mathcal A$, including randomized
-controllers, the theorem supplies a
-deterministic arrival and cost sequence fixed before the interaction
+controllers, there is a deterministic sequence of arrivals and costs,
+fixed before the interaction,
 such that
 \[
 \mathbb E_{\mathcal A}[\Reg_T(\mathcal M_H)]
@@ -69,8 +69,9 @@ randomization. For fixed $H,\alpha,L_x,L_u$, this establishes optimal
 $\sqrt T$ dependence on the horizon $T$. Gaps remain in the dependence
 on the retention coefficient $\alpha$ and memory length $H$.
 
-Chapter~\ref{Section:ChapRateAdaptation} learns mean offered service across
-transmission rates from success or failure acknowledgments. It assumes a known
+Chapter~\ref{Section:ChapRateAdaptation} studies rate adaptation using
+success or failure acknowledgments to learn mean offered service across
+transmission rates. It assumes a known
 lower bound $\varepsilon>0$ on the difference between the best achievable mean
 offered service and the mean arrival rate. This supplied bound determines
 a finite rate grid containing a stabilizing rate. Starting from an empty queue, the UCB1
@@ -94,13 +95,11 @@ the separate long-run guarantee
 \Needspace{8\baselineskip}
 \section{Models and performance criteria}
 
-Table~\ref{tab:intro:model-comparison} records the model, feedback,
-comparator, and feasibility assumptions. The optimization chapters bound
-objective gap and, for functional constraints, constraint violation.
+Table~\ref{tab:intro:model-comparison} summarizes the models, feedback,
+comparators, and feasibility assumptions.
 The energy-allocation benchmark satisfies a mean budget and may exceed
 the available resource on individual slots. The SDAC benchmarks are
 feasible policies evaluated on their own trajectories.
-The rate-adaptation criterion is time-average expected queue length.
 
 
 
@@ -109,10 +108,10 @@ The rate-adaptation criterion is time-average expected queue length.
 \paragraph{Strongly convex objectives.}
 An open question is whether the techniques of
 Chapter~\ref{Section:projfree-domain} can exploit strong convexity to
-achieve an objective-gap rate faster than $O(T^{-1/2})$ for query budget
-$T$. The aim is to retain an ordinary linear optimization oracle over
-the original domain and projections only onto an auxiliary set, without
-requiring the objective to be smooth.
+achieve a rate of convergence of the objective gap faster than
+$O(T^{-1/2})$ for a query budget $T$. The aim is to retain an ordinary
+linear optimization oracle over the original domain and projections only
+onto an auxiliary set, without requiring the objective to be smooth.
 
 \paragraph{Constraint dependence and violation lower bounds.}
 For Chapter~\ref{Section:projfree}, can the dependence on the number $m$
@@ -120,14 +119,13 @@ of functional constraints be improved when the individual constraint
 subgradient bounds are held fixed? This dependence enters the violation
 guarantee through the aggregate bound $G$ and the multiplier norm.
 A related problem is to establish lower bounds for the constraint-violation
-norm $V_T$ under the same oracle model and objective-accuracy requirement,
+norm $V_T$ under the same oracle model and requirement on objective accuracy,
 and thereby determine the best possible dependence on $T$ and $m$.
 
-\paragraph{Feasible saturation-policy benchmarks.}
-Chapter~\ref{Section:ChapEnergyharvest} compares performance with a fixed
-allocation that satisfies a mean energy budget but may exceed the energy
-available on individual slots. Can comparable regret guarantees be
-obtained against feasible threshold-saturation policies? Such a policy
+\paragraph{Feasible policy benchmarks for energy allocation.}
+Can the regret guarantees against fixed allocations in
+Chapter~\ref{Section:ChapEnergyharvest} be extended to feasible
+policies that spend up to a fixed amount each slot? Such a policy
 fixes a maximum expenditure $u\in[0,1]$ and allocation proportions,
 spends $u$ whenever sufficient energy is available, and otherwise spends
 all available energy. Under the chapter's arrival timing, its total usage
@@ -159,17 +157,17 @@ requires a different controller, rather than a sharper analysis of the
 current UCB1 policy alone.
 
 \paragraph{Feedback along the executed trajectory.}
-A further target for scalar storage control is to extend the regret bounds
-to costs observed only along the executed trajectory. The controller in
+Another open problem is to extend the scalar storage regret bounds to
+costs observed only along the executed trajectory. The controller in
 Chapter~\ref{Section:ChapControl}
 uses the revealed cost function to obtain a subgradient at the current
-fixed-policy state and action. An estimator based on trajectory-only
-feedback must account for the dependence of the executed state on past
-actions.
+fixed-policy state and action. An estimator based on feedback observed
+only along the executed trajectory must account for the dependence of
+the executed state on past actions.
 
 \paragraph{Horizon-independent storage control.}
-Horizon-independent guarantees would retain the storage regret rates
-without a planned horizon. Online projected subgradient descent with
+Can the storage regret rates be attained without knowing the horizon in
+advance? Online projected subgradient descent with
 $\eta_t\coloneqq t^{-1/2}$ achieves $O(\sqrt T)$ regret without knowing $T$ in
 advance on a compact convex domain with uniformly bounded subgradients
 \cite[Theorem~1]{zinkevich2003online}. For the scalar storage controller, the
